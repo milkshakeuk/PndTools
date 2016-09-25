@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Text.RegularExpressions;
 using PndTools;
 using PndToolsTests.Helpers;
 using Xunit;
@@ -12,7 +14,8 @@ namespace PndToolsTests.Intergration
         {
             // Assign
             string result;
-            var expected = File.ReadAllText("Intergration/TestExpectation/SORR.xml");
+            var pxmlStart = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>{Environment.NewLine}<PXML";
+            var pxmlEnd = "</PXML>";
             using (Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd"))
             {
                 // Action
@@ -20,7 +23,9 @@ namespace PndToolsTests.Intergration
             }
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.StartsWith(pxmlStart, result);
+            Assert.EndsWith(pxmlEnd, result);
+            
         }
 
         [Fact]
@@ -61,6 +66,11 @@ namespace PndToolsTests.Intergration
                 // Assert
                 Assert.Throws<InvalidPndException>(() => PndStreamHelper.GetIcon(stream));
             }
+        }
+
+        private static string RemoveXmlDeclaration(string pxml)
+        {
+            return Regex.Replace(pxml, "^.+(\r\n|\r|\n)", string.Empty);
         }
     }
 }

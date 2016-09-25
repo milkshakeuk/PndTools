@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace PndTools
 {
@@ -32,9 +33,14 @@ namespace PndTools
             var position = FindPxml(stream);
             var data = stream.GetBytes(position.Start, position.End);
 
-            var xmlDeclaration = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>{Environment.NewLine}";
+            var xmlDeclaration = Encoding.UTF8.GetBytes($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>{Environment.NewLine}");
 
-            return xmlDeclaration + Encoding.UTF8.GetString(data);
+            var buffer = new byte[xmlDeclaration.Length + data.Length];
+
+            System.Buffer.BlockCopy(xmlDeclaration, 0, buffer, 0, xmlDeclaration.Length);
+            System.Buffer.BlockCopy(data, 0, buffer, xmlDeclaration.Length, data.Length);
+
+            return Encoding.UTF8.GetString(buffer);
         }
 
         public static byte[] GetIcon(Stream stream)

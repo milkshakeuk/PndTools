@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <PXML xmlns="http://openpandora.org/namespaces/PXML">
 	<package id="milk.sorr.shake">
 		<version major="0" minor="0" release="1" build="4" type="beta"/>
