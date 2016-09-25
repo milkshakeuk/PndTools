@@ -1,4 +1,7 @@
-# PndTools
+# PndTools [![Build Status][travis-image]][travis-url]
+
+
+
 PndTools is a DotNet library for handling pnd files
 
 ## Goals
@@ -53,3 +56,6 @@ This is for the OpenPandora community mainly please check them out.
 The PndAid library is released under the LGPL v2.1 license.
 
 <http://www.gnu.org/licenses/lgpl-2.1.html>
+
+[travis-url]: https://travis-ci.org/milkshakeuk/PndTools
+[travis-image]: https://travis-ci.org/milkshakeuk/PndTools.svg?branch=master
