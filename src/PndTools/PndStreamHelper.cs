@@ -1,8 +1,7 @@
-﻿using PndTools.Extentions;
+﻿using PndTools.Extensions;
 using System;
 using System.IO;
 using System.Text;
-using System.Linq;
 
 namespace PndTools
 {
@@ -28,8 +27,17 @@ namespace PndTools
             return new Position(start, end);
         }
 
+        /// <summary>
+        ///     Retreives the PXML as a string from the <paramref name="stream" />.
+        /// </summary>
+        /// <param name="stream">File stream from which to search</param>
+        /// <returns>PXML as a string</returns>
+        /// <exception cref="PndTools.InvalidPndException"><paramref name="stream" /> is missing PXML.</exception>
+        /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> is <c>null</c>.</exception>
         public static string GetPxml(Stream stream)
         {
+            Guard.AgainstNullArgument(nameof(stream), stream);
+
             var position = FindPxml(stream);
             var data = stream.GetBytes(position.Start, position.End);
 
@@ -37,16 +45,25 @@ namespace PndTools
 
             var buffer = new byte[xmlDeclaration.Length + data.Length];
 
-            System.Buffer.BlockCopy(xmlDeclaration, 0, buffer, 0, xmlDeclaration.Length);
-            System.Buffer.BlockCopy(data, 0, buffer, xmlDeclaration.Length, data.Length);
+            Buffer.BlockCopy(xmlDeclaration, 0, buffer, 0, xmlDeclaration.Length);
+            Buffer.BlockCopy(data, 0, buffer, xmlDeclaration.Length, data.Length);
 
             return Encoding.UTF8.GetString(buffer);
         }
 
+        /// <summary>
+        ///     Retreives the Icon as a byte array from the <paramref name="stream" />.
+        /// </summary>
+        /// <param name="stream">File stream from which to search</param>
+        /// <returns>Icon as a byte array</returns>
+        /// <exception cref="PndTools.InvalidPndException"><paramref name="stream" /> is missing Icon.</exception>
+        /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> is <c>null</c>.</exception>
         public static byte[] GetIcon(Stream stream)
         {
+            Guard.AgainstNullArgument(nameof(stream), stream);
+
             var position = FindIcon(stream);
-            return stream.GetBytes(position.Start, position.End);
+            return stream.GetBytes(position.Start, position.End);   
         }
 
         private static Position FindIcon(Stream stream)

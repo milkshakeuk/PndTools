@@ -4,25 +4,29 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace PndTools.Extentions
+namespace PndTools.Extensions
 {
     public static class StreamExtentions
     {
         /// <summary>
         /// Searches for a byte sequence that matches the sequence defined by
-        /// <paramref name="input" />, starting at the end of <paramref name="stream" /> 
+        /// <paramref name="input" />, starting at the end of <paramref name="stream" />
         /// and working backwards returning the zero-based index of the first occurrence
         /// within the byte array of the <paramref name="stream" />
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="input"></param>
-        /// <param name="direction"></param>
+        /// <param name="stream">this stream</param>
+        /// <param name="input">the string to look for</param>
+        /// <param name="direction">the direction of search traversal</param>
         /// <returns>
         /// The zero-based index of the first occurrence of an byte sequence that matches the
         /// sequence defined by <paramref name="input" />, if found; otherwise, –1.
         /// </returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> or <paramref name="input" /> is <c>null</c>.</exception>
         public static long Find(this Stream stream, string input, Direction direction = Direction.Forward)
         {
+            Guard.AgainstNullArgument(nameof(stream), stream);
+            Guard.AgainstNullArgument(nameof(input), input);
+
             var pattern = Encoding.UTF8.GetBytes(input);
 
             return stream.Find(pattern, direction);
@@ -30,19 +34,22 @@ namespace PndTools.Extentions
 
         /// <summary>
         /// Searches for a byte sequence that matches the sequence defined by
-        /// <paramref name="input" />, starting at the end of <paramref name="stream" /> 
+        /// <paramref name="input" />, starting at the end of <paramref name="stream" />
         /// and working backwards returning the zero-based index of the first occurrence
         /// within the byte array of the <paramref name="stream" />
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="input"></param>
-        /// <param name="direction"></param>
+        /// <param name="stream">this stream</param>
+        /// <param name="input">the byte sequence to look for</param>
+        /// <param name="direction">the direction of search traversal</param>
         /// <returns>
         /// The zero-based index of the first occurrence of an byte sequence that matches the
         /// sequence defined by <paramref name="input" />, if found; otherwise, –1.
         /// </returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> is <c>null</c>.</exception>
         public static long Find(this Stream stream, byte[] input, Direction direction = Direction.Forward)
         {
+            Guard.AgainstNullArgument(nameof(stream), stream);
+
             switch (direction)
             {
                 case Direction.Forward:
@@ -57,12 +64,16 @@ namespace PndTools.Extentions
         /// <summary>
         /// Returns a sub section of the stream designated by the <paramref name="start"/> and <paramref name="end"/> positions
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
+        /// <param name="stream">this stream</param>
+        /// <param name="start">the start position</param>
+        /// <param name="end">the end position</param>
         /// <returns>A byte array containing the bytes located between the <paramref name="start"/> and <paramref name="end"/> position of the <paramref name="stream"/></returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> is <c>null</c>.</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="start" /> or <paramref name="end"/> is <c>null</c>.</exception>
         public static byte[] GetBytes(this Stream stream, long start, long end)
         {
+            Guard.AgainstNullArgument(nameof(stream), stream);
+
             if (end > stream.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(end), $"End position cannot be greater than stream length ({stream.Length}).");
@@ -85,10 +96,13 @@ namespace PndTools.Extentions
         /// <summary>
         /// Returns the byte array of the <paramref name="stream"/>
         /// </summary>
-        /// <param name="stream"></param>
-        /// <returns>A byte array</returns>
+        /// <param name="stream">this stream</param>
+        /// <returns>byte array</returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> is <c>null</c>.</exception>
         public static byte[] GetBytes(this Stream stream)
         {
+            Guard.AgainstNullArgument(nameof(stream), stream);
+
             var length = stream.Length;
             var buffer = new byte[length];
 

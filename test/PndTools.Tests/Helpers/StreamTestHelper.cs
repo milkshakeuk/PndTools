@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace PndToolsTests.Helpers
+namespace PndTools.Tests.Helpers
 {
     public static class StreamTestHelper
     {

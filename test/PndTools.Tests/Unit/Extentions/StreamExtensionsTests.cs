@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using PndTools.Extentions;
-using PndToolsTests.Helpers;
+using PndTools.Extensions;
+using PndTools.Tests.Helpers;
 using Xunit;
 
-namespace PndToolsTests.Unit.Extentions
+namespace PndTools.Tests.Unit.Extentions
 {
     public class StreamExtensionsTests
     {
@@ -14,6 +14,7 @@ namespace PndToolsTests.Unit.Extentions
             // Assign
             const int expected = -1;
             long result;
+
             using (Stream stream = StreamTestHelper.GenerateStreamFromString("fsdkl;dsfkl;dfkl;skl;"))
             {
                 // Action
@@ -30,6 +31,7 @@ namespace PndToolsTests.Unit.Extentions
             // Assign
             const int expected = 10;
             long result;
+
             using (Stream stream = StreamTestHelper.GenerateStreamFromString("fsdkl;ds**mystring***skl;"))
             {
                 // Action
@@ -41,11 +43,33 @@ namespace PndToolsTests.Unit.Extentions
         }
 
         [Fact]
+        public void Find_WillThrowArgumentNullExceptionWhenStreamIsNull()
+        {
+            // Assign
+            // Action
+            // Assert
+            Assert.Throws<ArgumentNullException>(() => (null as Stream).Find("mystring"));
+        }
+
+        [Fact]
+        public void Find_WillThrowArgumentNullExceptionWhenInputIsNull()
+        {
+            // Assign
+            using (Stream stream = StreamTestHelper.GenerateRandomStream())
+            {
+                // Action
+                // Assert
+                Assert.Throws<ArgumentNullException>(() => stream.Find(null as string));
+            }
+        }
+
+        [Fact]
         public void GetBytes_WillReturnByteArraySectionOfStreamFromStartAndEndPositionsSupplied()
         {
             // Assign
             var expected = new byte[] { 120, 116 };
             byte[] result;
+
             using (Stream stream = StreamTestHelper.GenerateStreamFromString("randomtext"))
             {
                 // Action
@@ -61,6 +85,7 @@ namespace PndToolsTests.Unit.Extentions
         {
             // Assign
             var expected = $"Start position cannot be less than 0.{Environment.NewLine}Parameter name: start";
+
             using (Stream stream = StreamTestHelper.GenerateStreamFromString("randomtext"))
             {
                 // Action
@@ -75,6 +100,7 @@ namespace PndToolsTests.Unit.Extentions
         {
             // Assign
             var expected = $"End position cannot be greater than stream length (10).{Environment.NewLine}Parameter name: end";
+
             using (Stream stream = StreamTestHelper.GenerateStreamFromString("randomtext"))
             {
                 // Action
@@ -85,11 +111,21 @@ namespace PndToolsTests.Unit.Extentions
         }
 
         [Fact]
+        public void GetBytes_WillThrowArgumentNullExceptionWhenTheStreamIsNull()
+        {
+            // Assign
+            // Action
+            // Assert
+            Assert.Throws<ArgumentNullException>(() => (null as Stream).GetBytes(8, 10));
+        }
+
+        [Fact]
         public void GetBytes_WillReturnByteArrayOfStream()
         {
             // Assign
             var expected = StreamTestHelper.GenerateRandomBytes();
             byte[] result;
+
             using (Stream stream = new MemoryStream(expected))
             {
                 // Action
