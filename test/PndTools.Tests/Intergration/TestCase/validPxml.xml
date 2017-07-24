@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<PXML xmlns="http://openpandora.org/namespaces/PXML">
+	<package id="milk.sorr.shake">
+		<version major="0" minor="0" release="1" build="4" type="beta"/>
+		<author name="milkshake, mcobit" website="http://repo.openpandora.org"/>
+		<titles>
+			<title lang="en_US">Streets of Rage Remake</title>
+		</titles>
+		<descriptions>
+			<description lang="en_US">A remake of the side-scrolling beat 'em up series "streets of rage" originally released by Sega in the 1990's.</description>
+		</descriptions>
+		<icon src="icon.png"/>
+	</package>
+	<application id="milk.sorr.shake" appdata="SORR">
+		<exec command="run.sh"/>
+		<version major="0" minor="0" release="1" build="4" type="beta"/>
+		<!--This program's version-->
+		<author name="Bombergames" website="http://www.bombergames.net/sorr_project/"/>
+		<!--Optional email and website, name required-->
+		<titles>
+			<title lang="en_US">Streets of Rage Remake</title>
+		</titles>
+		<title lang="en_US">Streets of Rage Remake</title>
+		<!--Extra <title> block for compatibility with OS versions before HF6-->
+		<descriptions>
+			<description lang="en_US">A remake of the side-scrolling beat 'em up series "streets of rage" originally released by Sega in the 1990's.</description>
+		</descriptions>
+		<description lang="en_US">A remake of the side-scrolling beat 'em up series "streets of rage" originally released by Sega in the 1990's.</description><!--Extra <description> block for compatibility with OS versions before HF6-->
+		<icon src="icon.png"/>
+		<licenses>
+			<license name="freeware"/><!--Optional url and sourcecodeurl, mandatory name-->
+		</licenses>
+		<previewpics>
+			<pic src="previewpics/preview3.png"/>
+			<pic src="previewpics/preview2.png"/>
+			<pic src="previewpics/preview1.png"/>
+		</previewpics>
+		<info name="Streets of Rage Remake Documentation" type="text/html" src="readme.txt"/>
+		<!--the categories has to conform to the FDO categories, those will be enforced by the schema and libpnd!-->
+		<categories>
+			<category name="Game"><!--Main category: a category like "Game", "Graphics", "Network", etc-->
+				<subcategory name="ArcadeGame"/><!--Subcategory 1: a subcategory, like "BoardGame", "StrategyGame", "ActionGame"-->
+			</category>
+		</categories>
+		<!--<associations>
+      File associations, with a short description, an extension, and start params.-->
+		<!--<association name="View Word File" filetype="application/msword" exec="-f %s -t doc"/>
+    </associations>-->
+		<!--<clockspeed frequency="700"/>--><!--Frequency in Hz-->
+	</application>
+</PXML>

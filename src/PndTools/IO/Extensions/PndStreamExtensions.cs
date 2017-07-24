@@ -1,17 +1,17 @@
-﻿using PndTools.Extensions;
+﻿using PndTools.IO.Extensions;
 using System;
 using System.IO;
 using System.Text;
 
-namespace PndTools
+namespace PndTools.IO.Extensions
 {
-    public static class PndStreamHelper
+    public static class PndStreamExtensions
     {
         private const string PxmlStart = "<PXML";
         private const string PxmlEnd = "</PXML>";
         private static readonly byte[] PngMagicNumber = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a };
 
-        private static Position FindPxml(Stream stream)
+        private static Position FindPxml(this Stream stream)
         {
             var start = stream.Find(PxmlStart, Direction.Backwards);
             var end = stream.Find(PxmlEnd, Direction.Backwards);
@@ -34,11 +34,11 @@ namespace PndTools
         /// <returns>PXML as a string</returns>
         /// <exception cref="PndTools.InvalidPndException"><paramref name="stream" /> is missing PXML.</exception>
         /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> is <c>null</c>.</exception>
-        public static string GetPxml(Stream stream)
+        public static string GetPxml(this Stream stream)
         {
             Guard.AgainstNullArgument(nameof(stream), stream);
 
-            var position = FindPxml(stream);
+            var position = stream.FindPxml();
             var data = stream.GetBytes(position.Start, position.End);
 
             var xmlDeclaration = Encoding.UTF8.GetBytes($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>{Environment.NewLine}");
@@ -58,15 +58,15 @@ namespace PndTools
         /// <returns>Icon as a byte array</returns>
         /// <exception cref="PndTools.InvalidPndException"><paramref name="stream" /> is missing Icon.</exception>
         /// <exception cref="System.ArgumentNullException"><paramref name="stream" /> is <c>null</c>.</exception>
-        public static byte[] GetIcon(Stream stream)
+        public static byte[] GetIcon(this Stream stream)
         {
             Guard.AgainstNullArgument(nameof(stream), stream);
 
-            var position = FindIcon(stream);
+            var position = stream.FindIcon();
             return stream.GetBytes(position.Start, position.End);   
         }
 
-        private static Position FindIcon(Stream stream)
+        private static Position FindIcon(this Stream stream)
         {
             var start = stream.Find(PngMagicNumber, Direction.Backwards);
 

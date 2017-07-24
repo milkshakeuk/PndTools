@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using PndTools.Extensions;
+using PndTools.IO.Extensions;
 using PndTools.Tests.Helpers;
 using Xunit;
 

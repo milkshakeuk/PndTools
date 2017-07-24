@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using PndTools;
 using PndTools.Tests.Helpers;
 using Xunit;
+using PndTools.IO.Extensions;
 
-namespace PndTools.Tests.Intergration
+namespace PndTools.Tests.Intergration.IO.Extensions
 {
-    public class PndStreamHelperTests
+    public class PndStreamExtensionsTests
     {
         [Fact]
         public void GetPxml_WillReturnPxmlFromPndFileStream()
@@ -20,13 +20,12 @@ namespace PndTools.Tests.Intergration
             using (Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd"))
             {
                 // Action
-                result = PndStreamHelper.GetPxml(stream);
+                result = stream.GetPxml();
             }
 
             // Assert
             Assert.StartsWith(pxmlStart, result);
             Assert.EndsWith(pxmlEnd, result);
-            
         }
 
         [Fact]
@@ -39,7 +38,7 @@ namespace PndTools.Tests.Intergration
             using (Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd"))
             {
                 // Action
-                result = PndStreamHelper.GetIcon(stream);
+                result = stream.GetIcon();
             }
 
             // Assert
@@ -54,7 +53,7 @@ namespace PndTools.Tests.Intergration
             {
                 // Action
                 // Assert
-                Assert.Throws<InvalidPndException>(() => PndStreamHelper.GetPxml(stream));
+                Assert.Throws<InvalidPndException>(() => stream.GetPxml());
             }
         }
 
@@ -64,7 +63,7 @@ namespace PndTools.Tests.Intergration
             // Assign
             // Action
             // Assert
-            Assert.Throws<ArgumentNullException>(() => PndStreamHelper.GetPxml(null));
+            Assert.Throws<ArgumentNullException>(() => (null as Stream).GetPxml());
         }
 
         [Fact]
@@ -75,7 +74,7 @@ namespace PndTools.Tests.Intergration
             {
                 // Action
                 // Assert
-                Assert.Throws<InvalidPndException>(() => PndStreamHelper.GetIcon(stream));
+                Assert.Throws<InvalidPndException>(() => stream.GetIcon());
             }
         }
 
@@ -85,7 +84,7 @@ namespace PndTools.Tests.Intergration
             // Assign
             // Action
             // Assert
-            Assert.Throws<ArgumentNullException>(() => PndStreamHelper.GetIcon(null));
+            Assert.Throws<ArgumentNullException>(() => (null as Stream).GetIcon());
         }
 
         private static string RemoveXmlDeclaration(string pxml)

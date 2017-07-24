@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace PndTools.Extensions
+namespace PndTools.IO.Extensions
 {
     public static class StreamExtentions
     {
