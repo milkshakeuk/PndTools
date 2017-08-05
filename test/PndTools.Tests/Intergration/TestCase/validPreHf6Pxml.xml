@@ -1,10 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <PXML xmlns="http://openpandora.org/namespaces/PXML">
 	<package id="packageId">
-		<version major="1" minor="0" release="0" build="0" type="other"/>
-		<author name="Package Author" website="http://www.example.org"/>
-    <descriptions>
-			<description lang="en_GB">Package Description.</description>
+		<version major="1" minor="0" release="0" build="0" type="release"/>
+		<author name="Package Author" website="http://www.example.com"/>
+		<titles>
+			<title lang="en_US">Package Title</title>
+		</titles>
+		<descriptions>
+			<description lang="en_US">Package Description.</description>
 		</descriptions>
 		<icon src="icon.png"/>
 	</package>
@@ -12,16 +15,10 @@
 		<exec command="run.sh"/>
 		<version major="1" minor="0" release="0" build="0" type="release"/>
 		<!--This program's version-->
-		<author name="Application Author" website="http://www.example.org"/>
+		<author name="Application Author" website="http://www.example.com"/>
 		<!--Optional email and website, name required-->
-		<titles>
-			<title lang="en_US">Application Title</title>
-		</titles>
 		<title lang="en_US">Application Title</title>
 		<!--Extra <title> block for compatibility with OS versions before HF6-->
-		<descriptions>
-			<description lang="en_US">Application Description.</description>
-		</descriptions>
 		<description lang="en_US">Application Description.</description><!--Extra <description> block for compatibility with OS versions before HF6-->
 		<icon src="icon.png"/>
 		<licenses>
@@ -36,7 +33,7 @@
 		<!--the categories has to conform to the FDO categories, those will be enforced by the schema and libpnd!-->
 		<categories>
 			<category name="Game"><!--Main category: a category like "Game", "Graphics", "Network", etc-->
-				<subcategory name="Midi"/><!--Subcategory 1: a subcategory, like "BoardGame", "StrategyGame", "ActionGame"-->
+				<subcategory name="ArcadeGame"/><!--Subcategory 1: a subcategory, like "BoardGame", "StrategyGame", "ActionGame"-->
 			</category>
 		</categories>
 		<!--<associations>

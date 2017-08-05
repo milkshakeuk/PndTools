@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using PndTools.Xml.Extensions;
+using PndTools.Validation.Extensions;
 
 namespace PndTools.Validation
 {
@@ -30,11 +32,62 @@ namespace PndTools.Validation
             var errors = new List<string>();
 
             document.Validate(this.SchemaSet, (o, e) =>
-             {
-                 errors.Add($"PXML {WithoutNamespace(e.Message)} ({e.Exception.LineNumber}:{e.Exception.LinePosition})");
-             });
+            {
+                errors.Add($"PXML {WithoutNamespace(e.Message)} ({e.Exception.LineNumber}:{e.Exception.LinePosition})");
+            });
+
+            errors.AddRange(this.ValidateDefaultLangForPackage(document));
+            errors.AddRange(this.ValidateDefaultLangForApplications(document));
+            errors.AddRange(this.ValidateSubcategoriesAgainstCategory(document));
 
             return new ValidationResult(errors);
+        }
+
+        private IEnumerable<string> ValidateDefaultLangForPackage(XDocument document)
+        {
+            var package = document.Root.XElement("package");
+
+            var errors = new List<string>();
+
+            package.XElement("titles")?.XElements("title")?.ValidateDefaultLocale(errors);
+            package.XElement("descriptions")?.XElements("description")?.ValidateDefaultLocale(errors);
+
+            return errors;
+        }
+
+        private IEnumerable<string> ValidateDefaultLangForApplications(XDocument document)
+        {
+            var applications = document.Root.XElements("application");
+
+            var errors = new List<string>();
+
+            foreach (var application in applications)
+            {
+                var titles = application.XElement("titles")?.XElements("title") 
+                          ?? application.XElements("title");
+
+                var descriptions = application.XElement("descriptions")?.XElements("description") 
+                                ?? application.XElements("description");
+
+                titles.ValidateDefaultLocale(errors);
+                descriptions.ValidateDefaultLocale(errors);
+            }
+
+            return errors;
+        }
+
+        private IEnumerable<string> ValidateSubcategoriesAgainstCategory(XDocument document)
+        {
+            var applications = document.Root.XElements("application");
+
+            var errors = new List<string>();
+
+            foreach (var application in applications)
+            {
+                application.XElement("categories").XElements("category").ValidateCategorySubcategoryPairing(errors);
+            }
+
+            return errors;
         }
 
         private static string WithoutNamespace(string input)

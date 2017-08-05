@@ -30,6 +30,9 @@
     <None Update="Intergration\TestCase\SORR.pnd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Intergration\TestCase\validPreHf6Pxml.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Intergration\TestCase\validPxml.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
