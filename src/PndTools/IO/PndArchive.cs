@@ -160,13 +160,11 @@ public sealed class PndArchive : IDisposable
         _disposed = true;
     }
 
-    private static DiscFileSystem CreateFileSystem(Stream stream, PndArchiveType archiveType)
-    {
-        return archiveType switch
+    private static DiscFileSystem CreateFileSystem(Stream stream, PndArchiveType archiveType) =>
+        archiveType switch
         {
             PndArchiveType.SquashFs => new SquashFileSystemReader(stream),
             PndArchiveType.Iso => new CDReader(stream, joliet: true),
             _ => throw new InvalidPndException("Cannot open archive: file type is not SquashFS or ISO 9660.")
         };
-    }
 }

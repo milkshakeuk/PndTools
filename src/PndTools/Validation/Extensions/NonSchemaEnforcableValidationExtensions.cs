@@ -77,8 +77,10 @@ public static class NonSchemaEnforcableValidationExtensions
         }
     }
 
+#pragma warning disable CA1859 // IReadOnlyDictionary signals immutability intent on this field
     private static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> CategoryMatrix =
         new Dictionary<string, IReadOnlySet<string>>
+#pragma warning restore CA1859
         {
             { "AudioVideo", new HashSet<string> { "Midi","Mixer","Music","Sequencer","Tuner","TV","AudioVideoEditing","Player","Recorder","DiscBurning" } },
             { "Audio",      new HashSet<string> { "HamRadio","Midi","Mixer","Sequencer","Tuner","AudioVideoEditing","Player","Recorder" } },

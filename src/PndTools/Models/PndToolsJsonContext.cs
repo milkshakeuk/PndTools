@@ -1,5 +1,9 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using System.Text.Json.Serialization;
-using PndTools.Models;
+
+namespace PndTools.Models;
 
 /// <summary>
 /// AOT-safe JSON serialisation context for all PXML model types.

@@ -18,7 +18,7 @@ public static class TypeParsingExtensions
     /// </typeparam>
     /// <param name="value">The string value to parse.</param>
     /// <returns>The parsed value, or <c>default</c> when the value is absent and <typeparamref name="T"/> is nullable.</returns>
-    /// <exception cref="NullReferenceException"><paramref name="value"/> is empty and <typeparamref name="T"/> is a non-nullable value type.</exception>
+    /// <exception cref="ArgumentException"><paramref name="value"/> is null or empty and <typeparamref name="T"/> is a non-nullable value type.</exception>
     /// <exception cref="InvalidOperationException"><typeparamref name="T"/> is not a supported type.</exception>
     public static T? Parse<T>(string? value)
     {
@@ -36,14 +36,14 @@ public static class TypeParsingExtensions
                 return default;
             }
 
-            throw new NullReferenceException($"The field had no value, and {type.Name} cannot be null.");
+            throw new ArgumentException($"Cannot parse null or empty string as {type.Name}.", nameof(value));
         }
 
         if (type == typeof(bool) || type == typeof(bool?)) { return (T)(object)bool.Parse(value); }
-        if (type == typeof(int) || type == typeof(int?)) { return (T)(object)int.Parse(value); }
-        if (type == typeof(double) || type == typeof(double?)) { return (T)(object)double.Parse(value); }
-        if (type == typeof(decimal) || type == typeof(decimal?)) { return (T)(object)decimal.Parse(value); }
-        if (type == typeof(DateTime) || type == typeof(DateTime?)) { return (T)(object)DateTime.Parse(value); }
+        if (type == typeof(int) || type == typeof(int?)) { return (T)(object)int.Parse(value, System.Globalization.CultureInfo.InvariantCulture); }
+        if (type == typeof(double) || type == typeof(double?)) { return (T)(object)double.Parse(value, System.Globalization.CultureInfo.InvariantCulture); }
+        if (type == typeof(decimal) || type == typeof(decimal?)) { return (T)(object)decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture); }
+        if (type == typeof(DateTime) || type == typeof(DateTime?)) { return (T)(object)DateTime.Parse(value, System.Globalization.CultureInfo.InvariantCulture); }
         if (type == typeof(Guid) || type == typeof(Guid?)) { return (T)(object)Guid.Parse(value); }
 
         throw new InvalidOperationException($"Unable to parse type {type}");

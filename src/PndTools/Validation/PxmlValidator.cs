@@ -46,9 +46,8 @@ public class PxmlValidator
         var errors = new List<string>();
 
         document.Validate(_schemaSet, (_, e) =>
-        {
-            errors.Add($"PXML {WithoutNamespace(e.Message)} ({e.Exception.LineNumber}:{e.Exception.LinePosition})");
-        });
+            errors.Add($"PXML {WithoutNamespace(e.Message)} ({e.Exception.LineNumber}:{e.Exception.LinePosition})")
+        );
 
         errors.AddRange(ValidateDefaultLangForPackage(document));
         errors.AddRange(ValidateDefaultLangForApplications(document));
@@ -57,7 +56,7 @@ public class PxmlValidator
         return new ValidationResult(errors);
     }
 
-    private static IEnumerable<string> ValidateDefaultLangForPackage(XDocument document)
+    private static List<string> ValidateDefaultLangForPackage(XDocument document)
     {
         var package = document.Root!.XElement("package");
         var errors = new List<string>();
@@ -68,7 +67,7 @@ public class PxmlValidator
         return errors;
     }
 
-    private static IEnumerable<string> ValidateDefaultLangForApplications(XDocument document)
+    private static List<string> ValidateDefaultLangForApplications(XDocument document)
     {
         var errors = new List<string>();
 
@@ -87,7 +86,7 @@ public class PxmlValidator
         return errors;
     }
 
-    private static IEnumerable<string> ValidateSubcategoriesAgainstCategory(XDocument document)
+    private static List<string> ValidateSubcategoriesAgainstCategory(XDocument document)
     {
         var errors = new List<string>();
 
