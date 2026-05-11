@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
+    <AnalysisMode>All</AnalysisMode>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,31 +24,31 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Intergration\TestCase\abbaye.pnd">
+    <None Update="Integration\TestCase\abbaye.pnd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestCase\bar.pnd">
+    <None Update="Integration\TestCase\bar.pnd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestCase\Bump3.pnd">
+    <None Update="Integration\TestCase\Bump3.pnd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestCase\invalidPxml.xml">
+    <None Update="Integration\TestCase\invalidPxml.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestCase\SORR.pnd">
+    <None Update="Integration\TestCase\SORR.pnd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestCase\validPreHf6Pxml.xml">
+    <None Update="Integration\TestCase\validPreHf6Pxml.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestCase\validPxml.xml">
+    <None Update="Integration\TestCase\validPxml.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestExpectation\SORR.png">
+    <None Update="Integration\TestExpectation\SORR.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Intergration\TestExpectation\SORR.xml">
+    <None Update="Integration\TestExpectation\SORR.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
