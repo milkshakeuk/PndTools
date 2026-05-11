@@ -1,0 +1,21 @@
+default_install_hook_types = ["pre-commit", "commit-msg"]
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "markdownlint"
+name = "markdownlint"
+language = "system"
+entry = "npx markdownlint-cli2"
+types = ["markdown"]
+stages = ["pre-commit"]
+
+[[repos.hooks]]
+id = "commitlint"
+name = "commitlint"
+language = "system"
+entry = "npx commitlint --edit"
+stages = ["commit-msg"]
+always_run = true
+pass_filenames = false

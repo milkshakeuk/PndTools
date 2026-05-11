@@ -1,0 +1,19 @@
+# type(scope): short description  (50 chars max)
+# │     │       └─ imperative mood, lowercase, no full stop
+# │     └─ optional: io | xml | validation | models | ci | build
+# └─ feat | fix | docs | refactor | test | perf | build | ci | chore | revert
+#
+# feat!: or BREAKING CHANGE: footer → major bump
+# feat:                             → minor bump
+# fix: / perf:                      → patch bump
+# everything else                   → no version bump
+#
+# Optional body — explain WHY, not what. Wrap at 72 chars.
+
+
+# Optional footers, e.g.:
+#   BREAKING CHANGE: <description>
+#   Refs: #123
+#
+# ---------------------------------------------------------------------------
+# Conventional Commits: https://www.conventionalcommits.org
