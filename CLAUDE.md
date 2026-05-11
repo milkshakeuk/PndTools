@@ -10,6 +10,8 @@ A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package 
 - `TreatWarningsAsErrors: true` + `EnforceCodeStyleInBuild: true` — zero warnings policy, style violations break the build
 - `AnalysisMode: Recommended` (library), `All` (tests) via `Directory.Build.props`
 - `.editorconfig` based on `dotnet/runtime` — run `dotnet format` to fix violations automatically
+- Node.js devDependencies (`package.json`): `@commitlint/cli`, `@commitlint/config-conventional`, `markdownlint-cli2`
+- [prek][prek] for local git hooks (`prek.toml`) — run `prek install` after `npm install`
 
 ## Project structure
 
@@ -72,10 +74,19 @@ private static ReadOnlySpan<byte> PxmlStart => "<PXML"u8;
 
 ## Commit style
 
-Conventional commits. Feature commits include their tests in the same commit.
+[Conventional Commits][conventional-commits]. Feature commits include their tests in the same commit. Commit messages are validated by commitlint — enforced locally via the prek `commit-msg` hook and again in CI.
+
+Type → SemVer mapping: `feat` = minor, `fix`/`perf` = patch, `feat!`/`BREAKING CHANGE:` footer = major, everything else = no bump. This drives automated versioning and changelog generation.
+
+## Markdown style
+
+All `.md` files are linted with `markdownlint-cli2` using `.markdownlint.json`. The prek `pre-commit` hook runs it on staged files. To check manually: `npx markdownlint-cli2 "**/*.md"`. Inline links are avoided in favour of reference-style links collected at the bottom of each file.
 
 ## What we decided NOT to do
 
 - No `PndFileInfo` wrapper — .NET's native `FileInfo` already provides Name, FullName, DirectoryName, Extension, Length
 - No `PndArchive.Open(string path)` overload — avoids stream ownership complexity; callers manage `File.OpenRead`
 - No `PndFileType` / `DetectFileType` naming — renamed to `PndArchiveType` / `DetectArchiveType` to reflect that it describes the archive format, not the file type
+
+[conventional-commits]: https://www.conventionalcommits.org
+[prek]: https://prek.j178.dev
