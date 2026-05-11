@@ -1,0 +1,14 @@
+# Default: normalise line endings to LF on commit
+* text=auto eol=lf
+
+# Windows scripts keep CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary formats — no diffing or line-ending conversion
+*.pnd binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.nupkg binary
