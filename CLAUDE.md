@@ -7,7 +7,9 @@ A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package 
 - .NET 10 / C# 13, `LangVersion: latest`
 - xUnit v3 for tests (`TestContext.Current.CancellationToken`, `Assert.Single` not `Assert.Equal(1, ...)`)
 - `LTRData.DiscUtils.SquashFs` and `LTRData.DiscUtils.Iso9660` for archive access — both extend `DiscFileSystem`, no shelling out
-- `TreatWarningsAsErrors: true` — zero warnings policy
+- `TreatWarningsAsErrors: true` + `EnforceCodeStyleInBuild: true` — zero warnings policy, style violations break the build
+- `AnalysisMode: Recommended` (library), `All` (tests) via `Directory.Build.props`
+- `.editorconfig` based on `dotnet/runtime` — run `dotnet format` to fix violations automatically
 
 ## Project structure
 
@@ -23,14 +25,16 @@ src/PndTools/
   PxmlParser.cs
 
 test/PndTools.Tests/
-  Intergration/   — note: directory name has a typo, keep as-is to avoid churn
+  Integration/
   Unit/
 ```
 
 ## Code conventions
 
 - File-scoped namespaces throughout
-- Braces on all `if` statements — no single-line ifs
+- Braces, spacing, naming, and expression-body style are enforced by `.editorconfig` — run `dotnet format` to auto-fix
+- All `.cs` files must begin with the SPDX licence header (enforced by `IDE0073`; `dotnet format` adds it)
+- Prefer `#pragma warning disable/restore` over `[SuppressMessage]` for diagnostic suppressions — pragmas are less verbose and keep the suppression close to the code
 - No comments unless the WHY is non-obvious; no summary-of-what comments
 - XML docs on all public members using UK English spelling (e.g. "serialisation" not "serialization")
 - Positional records use `<param>` tags on the record declaration; non-positional use `<summary>` on each property
