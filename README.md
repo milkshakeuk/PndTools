@@ -1,61 +1,104 @@
-# PndTools [![Build Status][travis-image]][travis-url]
+# PndTools [![CI][ci-image]][ci-url]
 
-
-
-PndTools is a DotNet library for handling pnd files
-
-## Goals
-* Easy to use library
-* Cross platform
-* Use in repoV2???
+A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package files. Supports both SquashFS and ISO 9660 based PND files.
 
 ## Features
-* Find and extract the pXML data
-* Find and extract the icon data
 
-### Basic Usage
+- Detect whether a PND file is SquashFS or ISO 9660 based
+- List, extract, and extract all files from a PND archive
+- Extract and parse PXML metadata
+- Validate PXML against the OpenPandora schema, including FreeDesktop.org category rules
+- Extract the embedded icon
+- Save PXML and icon directly to disk
 
-```csharp
-string result;
-using (Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd"))
-{
-    result = PndStreamHelper.GetPxml(stream);
-}
-```
-```csharp
-byte[] result;
-using (Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd"))
-{
-    result = PndStreamHelper.GetIcon(stream);
-}
+## Installation
+
+```shell
+dotnet add package PndTools
 ```
 
-## ToDo
-* Get file details (name, path, directory, extension, file size etc.)
-* Basic Pnd file validation based on file extension and file type
-* Detect Pnd archive type `( ISO | Squashfs )`
-* Save the `PXML` to its own file
-* Save the icon to its own file
-* Ability to list files in archive
-* Ability to extract files from both pnd archive formats `( ISO | Squashfs )`
-* Validate the `PXML`
+## Usage
 
-### Unit Testing
+### Detect archive type
 
-The library is accompanied by unit tests. The library uses `xUnit` for testing.
+```csharp
+using PndTools.IO.Extensions;
 
-[Learn about xUnit](https://xunit.github.io/)
+using var stream = File.OpenRead("game.pnd");
+PndArchiveType archiveType = stream.DetectArchiveType(); // SquashFs, Iso, or Unknown
+```
 
-## Community
+### List and extract files
 
-This is for the OpenPandora community mainly please check them out.
-[Visit the OpenPandora Community](http://boards.openpandora.org/)
+```csharp
+using PndTools.IO;
+
+using var stream = File.OpenRead("game.pnd");
+using var archive = PndArchive.Open(stream);
+
+Console.WriteLine(archive.ArchiveType); // SquashFs or Iso
+
+IReadOnlyList<string> files = archive.ListFiles();
+
+archive.ExtractFile("/PXML.xml", "output/PXML.xml");
+archive.ExtractAll("output/");
+```
+
+### Extract and parse PXML
+
+```csharp
+using var stream = File.OpenRead("game.pnd");
+string xml = stream.GetPxml();
+
+var parser = new PxmlParser();
+Pxml pxml = parser.Parse(xml);
+
+Console.WriteLine(pxml.Package.Id);
+Console.WriteLine(pxml.Package.Version?.Major);
+
+foreach (var app in pxml.Applications)
+{
+    Console.WriteLine(app.Titles.FirstOrDefault(t => t.Lang == "en_US")?.Text);
+}
+```
+
+### Validate PXML
+
+```csharp
+using PndTools.Validation;
+
+var validator = new PxmlValidator();
+ValidationResult result = validator.Validate(xml);
+
+if (!result.IsValid)
+{
+    foreach (var error in result.Errors)
+        Console.WriteLine(error);
+}
+```
+
+### Extract icon
+
+```csharp
+using var stream = File.OpenRead("game.pnd");
+byte[] icon = stream.GetIcon();
+```
+
+### Save PXML and icon to disk
+
+```csharp
+using var stream = File.OpenRead("game.pnd");
+stream.SavePxml("game.xml");
+stream.SaveIcon("icon.png");
+```
+
+## Requirements
+
+.NET 10 or later.
 
 ## License
 
-The PndAid library is released under the LGPL v2.1 license.
+MIT
 
-<http://www.gnu.org/licenses/lgpl-2.1.html>
-
-[travis-url]: https://travis-ci.org/milkshakeuk/PndTools
-[travis-image]: https://travis-ci.org/milkshakeuk/PndTools.svg?branch=master
+[ci-url]: https://github.com/milkshakeuk/PndTools/actions/workflows/ci.yml
+[ci-image]: https://github.com/milkshakeuk/PndTools/actions/workflows/ci.yml/badge.svg
