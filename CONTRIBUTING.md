@@ -7,10 +7,9 @@ You will need the [.NET 10 SDK][dotnet] and [Node.js][nodejs] (for commit hooks)
 ```bash
 dotnet restore
 npm install
-prek install
 ```
 
-`npm install` downloads the commitlint and markdownlint packages. `prek install` wires up the git hooks so every commit message and markdown file is validated locally before it reaches CI.
+`npm install` installs commitlint, markdownlint-cli2, and [prek][prek] — a lightweight Rust-based git hook manager. The `prepare` script then runs `prek install` automatically, wiring up a `pre-commit` hook that lints staged markdown files and a `commit-msg` hook that validates commit messages against the [Conventional Commits][conventional-commits] spec. Both run locally before anything reaches CI.
 
 ## Code style
 

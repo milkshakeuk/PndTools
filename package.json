@@ -1,9 +1,13 @@
 {
   "name": "pndtools",
   "private": true,
+  "scripts": {
+    "prepare": "prek install"
+  },
   "devDependencies": {
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
+    "@j178/prek": "^0.3.13",
     "markdownlint-cli2": "^0.22.1"
   }
 }

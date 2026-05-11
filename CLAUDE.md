@@ -10,8 +10,8 @@ A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package 
 - `TreatWarningsAsErrors: true` + `EnforceCodeStyleInBuild: true` — zero warnings policy, style violations break the build
 - `AnalysisMode: Recommended` (library), `All` (tests) via `Directory.Build.props`
 - `.editorconfig` based on `dotnet/runtime` — run `dotnet format` to fix violations automatically
-- Node.js devDependencies (`package.json`): `@commitlint/cli`, `@commitlint/config-conventional`, `markdownlint-cli2`
-- [prek][prek] for local git hooks (`prek.toml`) — run `prek install` after `npm install`
+- Node.js devDependencies (`package.json`): `@commitlint/cli`, `@commitlint/config-conventional`, `markdownlint-cli2`, `@j178/prek`
+- [prek][prek] for local git hooks (`prek.toml`) — installed via `npm install` (the `prepare` script runs `prek install` automatically)
 
 ## Project structure
 
