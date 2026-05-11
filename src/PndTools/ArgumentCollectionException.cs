@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using System.Runtime.CompilerServices;
 
 namespace PndTools;

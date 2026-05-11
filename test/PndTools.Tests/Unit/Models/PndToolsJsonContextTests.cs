@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using System.Text.Json;
 using PndTools.Models;
 

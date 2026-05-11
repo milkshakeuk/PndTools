@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 namespace PndTools.Models;
 
 /// <summary>Represents the parsed contents of a PXML document.</summary>

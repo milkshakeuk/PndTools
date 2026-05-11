@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using PndTools.Xml.Extensions;
 
 namespace PndTools.Tests.Unit.Xml.Extensions;

@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 namespace PndTools.Tests.Unit;
 
 public class ArgumentCollectionExceptionTests

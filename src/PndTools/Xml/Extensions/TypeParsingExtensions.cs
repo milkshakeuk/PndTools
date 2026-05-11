@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 namespace PndTools.Xml.Extensions;
 
 /// <summary>Utility methods for parsing string values into common .NET types.</summary>

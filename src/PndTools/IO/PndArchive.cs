@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using DiscUtils;
 using DiscUtils.Iso9660;
 using DiscUtils.SquashFs;

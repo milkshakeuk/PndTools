@@ -1,3 +1,6 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 namespace PndTools.Validation;
 
 /// <summary>The result of a PXML validation operation.</summary>
