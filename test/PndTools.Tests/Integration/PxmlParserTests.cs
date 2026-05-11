@@ -1,8 +1,10 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace PndTools.Tests.Intergration;
+namespace PndTools.Tests.Integration;
 
 public class PxmlParserTests
 {
@@ -10,11 +12,10 @@ public class PxmlParserTests
     public async Task Parse_WillParseValidPostHF6Pxml()
     {
         // Arrange
-        var xml = await File.ReadAllTextAsync("Intergration/TestCase/validPxml.xml", TestContext.Current.CancellationToken);
-        var sut = new PxmlParser();
+        var xml = await File.ReadAllTextAsync("Integration/TestCase/validPxml.xml", TestContext.Current.CancellationToken);
 
         // Act
-        var pxml = sut.Parse(xml);
+        var pxml = PxmlParser.Parse(xml);
 
         // Assert
         Assert.Equal("packageId", pxml.Package.Id);
@@ -38,11 +39,10 @@ public class PxmlParserTests
     public async Task Parse_WillParseValidPreHF6Pxml()
     {
         // Arrange
-        var xml = await File.ReadAllTextAsync("Intergration/TestCase/validPreHf6Pxml.xml", TestContext.Current.CancellationToken);
-        var sut = new PxmlParser();
+        var xml = await File.ReadAllTextAsync("Integration/TestCase/validPreHf6Pxml.xml", TestContext.Current.CancellationToken);
 
         // Act
-        var pxml = sut.Parse(xml);
+        var pxml = PxmlParser.Parse(xml);
 
         // Assert
         var application = Assert.Single(pxml.Applications);

@@ -47,12 +47,12 @@ public class TypeParsingExtensionsTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void Parse_WillThrowNullReferenceExceptionForNonNullableValueTypeWhenInputIsNullOrEmpty(string? input)
+    public void Parse_WillThrowArgumentExceptionForNonNullableValueTypeWhenInputIsNullOrEmpty(string? input)
     {
         // Arrange
         // Act
         // Assert
-        Assert.Throws<NullReferenceException>(() => TypeParsingExtensions.Parse<int>(input));
+        Assert.Throws<ArgumentException>(() => TypeParsingExtensions.Parse<int>(input));
     }
 
     [Fact]

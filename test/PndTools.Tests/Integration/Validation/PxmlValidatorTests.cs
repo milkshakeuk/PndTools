@@ -1,9 +1,12 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
 using PndTools.Validation;
 
-namespace PndTools.Tests.Intergration.Validation;
+namespace PndTools.Tests.Integration.Validation;
 
 public class PxmlValidatorTests
 {
@@ -25,7 +28,7 @@ public class PxmlValidatorTests
     public async Task Validate_WillValidateValidPxmlIsValid()
     {
         // Arrange
-        var pxml = await File.ReadAllTextAsync("Intergration/TestCase/validPxml.xml", TestContext.Current.CancellationToken);
+        var pxml = await File.ReadAllTextAsync("Integration/TestCase/validPxml.xml", TestContext.Current.CancellationToken);
         var sut = new PxmlValidator();
 
         // Act
@@ -40,7 +43,7 @@ public class PxmlValidatorTests
     public async Task Validate_WillValidateInvalidPxmlIsNotValid()
     {
         // Arrange
-        var pxml = await File.ReadAllTextAsync("Intergration/TestCase/invalidPxml.xml", TestContext.Current.CancellationToken);
+        var pxml = await File.ReadAllTextAsync("Integration/TestCase/invalidPxml.xml", TestContext.Current.CancellationToken);
         var expectedErrors = new[]
         {
             "PXML The 'type' attribute is invalid - The value 'other' is invalid according to its datatype 'releaseType' - The Enumeration constraint failed. (4:54)",

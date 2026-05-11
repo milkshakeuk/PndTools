@@ -8,8 +8,6 @@ namespace PndTools.Tests.Unit.Models;
 
 public class PndToolsJsonContextTests
 {
-    private static readonly JsonSerializerOptions Options = new(PndToolsJsonContext.Default.Options);
-
     [Fact]
     public void Serialise_WillUseCamelCasePropertyNames()
     {
@@ -24,8 +22,8 @@ public class PndToolsJsonContextTests
         var json = JsonSerializer.Serialize(pxml, PndToolsJsonContext.Default.Pxml);
 
         // Assert
-        Assert.Contains("\"package\"", json);
-        Assert.Contains("\"applications\"", json);
+        Assert.Contains("\"package\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"applications\"", json, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -46,9 +44,9 @@ public class PndToolsJsonContextTests
         var json = JsonSerializer.Serialize(pxml, PndToolsJsonContext.Default.Pxml);
 
         // Assert
-        Assert.Contains("\"id\"", json);
-        Assert.Contains("test.app", json);
-        Assert.Contains("My App", json);
+        Assert.Contains("\"id\"", json, StringComparison.Ordinal);
+        Assert.Contains("test.app", json, StringComparison.Ordinal);
+        Assert.Contains("My App", json, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -65,6 +63,6 @@ public class PndToolsJsonContextTests
         var json = JsonSerializer.Serialize(pxml, PndToolsJsonContext.Default.Pxml);
 
         // Assert
-        Assert.Contains("\"applications\":[]", json);
+        Assert.Contains("\"applications\":[]", json, StringComparison.Ordinal);
     }
 }

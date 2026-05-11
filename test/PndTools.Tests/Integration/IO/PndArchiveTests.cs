@@ -1,9 +1,12 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using System.IO;
 using PndTools.IO;
 using PndTools.IO.Extensions;
 using PndTools.Models;
 
-namespace PndTools.Tests.Intergration.IO;
+namespace PndTools.Tests.Integration.IO;
 
 public class PndArchiveTests
 {
@@ -31,7 +34,7 @@ public class PndArchiveTests
     public void Open_WillSetArchiveTypeToSquashFsForSquashFsPnd()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
 
         // Act
         using var archive = PndArchive.Open(stream);
@@ -44,7 +47,7 @@ public class PndArchiveTests
     public void Open_WillSetArchiveTypeToIsoForIsoPnd()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/Bump3.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
 
         // Act
         using var archive = PndArchive.Open(stream);
@@ -57,7 +60,7 @@ public class PndArchiveTests
     public void ListFiles_WillReturnFilesFromSquashFsPnd()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
         using var archive = PndArchive.Open(stream);
 
         // Act
@@ -71,7 +74,7 @@ public class PndArchiveTests
     public void ListFiles_WillReturnFilesFromIsoPnd()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/Bump3.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
         using var archive = PndArchive.Open(stream);
 
         // Act
@@ -89,9 +92,9 @@ public class PndArchiveTests
 
         try
         {
-            using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+            using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
             using var archive = PndArchive.Open(stream);
-            var internalPath = archive.ListFiles().First();
+            var internalPath = archive.ListFiles()[0];
 
             // Act
             archive.ExtractFile(internalPath, outputPath);
@@ -113,9 +116,9 @@ public class PndArchiveTests
 
         try
         {
-            using var stream = File.OpenRead("Intergration/TestCase/Bump3.pnd");
+            using var stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
             using var archive = PndArchive.Open(stream);
-            var internalPath = archive.ListFiles().First();
+            var internalPath = archive.ListFiles()[0];
 
             // Act
             archive.ExtractFile(internalPath, outputPath);
@@ -133,7 +136,7 @@ public class PndArchiveTests
     public void ExtractFile_WillThrowFileNotFoundExceptionWhenPathDoesNotExistInArchive()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
         using var archive = PndArchive.Open(stream);
 
         // Act
@@ -151,7 +154,7 @@ public class PndArchiveTests
         {
             Directory.CreateDirectory(outputDirectory);
 
-            using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+            using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
             using var archive = PndArchive.Open(stream);
             var expected = archive.ListFiles().Count;
 
@@ -178,7 +181,7 @@ public class PndArchiveTests
         {
             Directory.CreateDirectory(outputDirectory);
 
-            using var stream = File.OpenRead("Intergration/TestCase/Bump3.pnd");
+            using var stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
             using var archive = PndArchive.Open(stream);
             var expected = archive.ListFiles().Count;
 
@@ -199,7 +202,7 @@ public class PndArchiveTests
     public void ListFiles_WillThrowObjectDisposedExceptionAfterDispose()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
         var archive = PndArchive.Open(stream);
         archive.Dispose();
 
@@ -212,7 +215,7 @@ public class PndArchiveTests
     public void ExtractFile_WillThrowObjectDisposedExceptionAfterDispose()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
         var archive = PndArchive.Open(stream);
         archive.Dispose();
 
@@ -225,7 +228,7 @@ public class PndArchiveTests
     public void ExtractAll_WillThrowObjectDisposedExceptionAfterDispose()
     {
         // Arrange
-        using var stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
         var archive = PndArchive.Open(stream);
         archive.Dispose();
 

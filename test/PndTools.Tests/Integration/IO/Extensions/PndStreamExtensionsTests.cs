@@ -1,8 +1,11 @@
+// Copyright (c) milkshakeuk. All rights reserved.
+// SPDX-License-Identifier: MIT
+
 using System.IO;
 using PndTools.IO.Extensions;
 using PndTools.Tests.Helpers;
 
-namespace PndTools.Tests.Intergration.IO.Extensions;
+namespace PndTools.Tests.Integration.IO.Extensions;
 
 public class PndStreamExtensionsTests
 {
@@ -13,23 +16,23 @@ public class PndStreamExtensionsTests
         var expectedStart = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>{Environment.NewLine}<PXML";
         const string expectedEnd = "</PXML>";
 
-        using Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
 
         // Act
         var result = stream.GetPxml();
 
         // Assert
-        Assert.StartsWith(expectedStart, result);
-        Assert.EndsWith(expectedEnd, result);
+        Assert.StartsWith(expectedStart, result, StringComparison.Ordinal);
+        Assert.EndsWith(expectedEnd, result, StringComparison.Ordinal);
     }
 
     [Fact]
     public void GetIcon_WillReturnIconBytesFromPndFile()
     {
         // Arrange
-        var expected = File.ReadAllBytes("Intergration/TestExpectation/SORR.png");
+        var expected = File.ReadAllBytes("Integration/TestExpectation/SORR.png");
 
-        using Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+        using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
 
         // Act
         var result = stream.GetIcon();
@@ -46,7 +49,7 @@ public class PndStreamExtensionsTests
 
         try
         {
-            using Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+            using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
             var expectedPxml = stream.GetPxml();
 
             stream.Position = 0;
@@ -72,7 +75,7 @@ public class PndStreamExtensionsTests
 
         try
         {
-            using Stream stream = File.OpenRead("Intergration/TestCase/SORR.pnd");
+            using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
             var expectedIcon = stream.GetIcon();
 
             stream.Position = 0;
@@ -242,9 +245,9 @@ public class PndStreamExtensionsTests
     }
 
     [Theory]
-    [InlineData("Intergration/TestCase/SORR.pnd", PndArchiveType.SquashFs)]
-    [InlineData("Intergration/TestCase/Bump3.pnd", PndArchiveType.Iso)]
-    [InlineData("Intergration/TestCase/abbaye.pnd", PndArchiveType.SquashFs)]
+    [InlineData("Integration/TestCase/SORR.pnd", PndArchiveType.SquashFs)]
+    [InlineData("Integration/TestCase/Bump3.pnd", PndArchiveType.Iso)]
+    [InlineData("Integration/TestCase/abbaye.pnd", PndArchiveType.SquashFs)]
     public void DetectArchiveType_WillReturnCorrectTypeForRealPndFiles(string path, PndArchiveType expected)
     {
         // Arrange

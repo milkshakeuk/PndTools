@@ -48,6 +48,6 @@ public class ArgumentCollectionExceptionTests
         var ex = Assert.Throws<ArgumentCollectionException>(() => ArgumentCollectionException.ThrowIfNullOrEmpty(myCollection));
 
         // Assert
-        Assert.Contains("myCollection", ex.Message);
+        Assert.Contains("myCollection", ex.Message, StringComparison.Ordinal);
     }
 }
