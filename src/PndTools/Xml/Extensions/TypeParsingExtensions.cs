@@ -1,60 +1,48 @@
-﻿using System;
+namespace PndTools.Xml.Extensions;
 
-namespace PndTools.Xml.Extensions
+/// <summary>Utility methods for parsing string values into common .NET types.</summary>
+public static class TypeParsingExtensions
 {
-    public static class TypeParsingExtensions
+    /// <summary>
+    /// Parses <paramref name="value"/> into <typeparamref name="T"/>.
+    /// Returns <c>default</c> for nullable or reference types when <paramref name="value"/> is
+    /// <c>null</c> or empty. Throws for non-nullable value types with no value.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The target type. Supported types are <see cref="string"/>, <see cref="bool"/>,
+    /// <see cref="int"/>, <see cref="double"/>, <see cref="decimal"/>, <see cref="DateTime"/>,
+    /// and <see cref="Guid"/>, plus their nullable equivalents.
+    /// </typeparam>
+    /// <param name="value">The string value to parse.</param>
+    /// <returns>The parsed value, or <c>default</c> when the value is absent and <typeparamref name="T"/> is nullable.</returns>
+    /// <exception cref="NullReferenceException"><paramref name="value"/> is empty and <typeparamref name="T"/> is a non-nullable value type.</exception>
+    /// <exception cref="InvalidOperationException"><typeparamref name="T"/> is not a supported type.</exception>
+    public static T? Parse<T>(string? value)
     {
-        public static T Parse<T>(string value)
+        var type = typeof(T);
+
+        if (type == typeof(string))
         {
-            var typ = typeof(T);
-            if (typ == typeof(string))
-            {
-                return (T)(object)value;
-            }
-
-            // Reference types are allowed to be null, whereas value types will cause
-            // this method to throw if not present in the field
-            if (string.IsNullOrEmpty(value))
-            {
-                if (typ.IsClass || (Nullable.GetUnderlyingType(typ) != null))
-                {
-                    return (T)(object)null;
-                }
-
-                throw new NullReferenceException($"The field didn't contain a value, and {typ.Name} cannot be cast to null");
-            }
-
-            if ((typ == typeof(bool)) || (typ == typeof(bool?)))
-            {
-                return (T)(object)bool.Parse(value);
-            }
-
-            if ((typ == typeof(int)) || (typ == typeof(int?)))
-            {
-                return (T)(object)int.Parse(value);
-            }
-
-            if ((typ == typeof(double)) || (typ == typeof(double?)))
-            {
-                return (T)(object)double.Parse(value);
-            }
-
-            if ((typ == typeof(decimal)) || (typ == typeof(decimal?)))
-            {
-                return (T)(object)decimal.Parse(value);
-            }
-
-            if ((typ == typeof(DateTime)) || (typ == typeof(DateTime?)))
-            {
-                return (T)(object)DateTime.Parse(value);
-            }
-
-            if ((typ == typeof(Guid)) || (typ == typeof(Guid?)))
-            {
-                return (T)(object)Guid.Parse(value);
-            }
-
-            throw new InvalidOperationException($"Unable to parse type {typ}");
+            return (T?)(object?)value;
         }
+
+        if (string.IsNullOrEmpty(value))
+        {
+            if (!type.IsValueType || Nullable.GetUnderlyingType(type) is not null)
+            {
+                return default;
+            }
+
+            throw new NullReferenceException($"The field had no value, and {type.Name} cannot be null.");
+        }
+
+        if (type == typeof(bool) || type == typeof(bool?)) { return (T)(object)bool.Parse(value); }
+        if (type == typeof(int) || type == typeof(int?)) { return (T)(object)int.Parse(value); }
+        if (type == typeof(double) || type == typeof(double?)) { return (T)(object)double.Parse(value); }
+        if (type == typeof(decimal) || type == typeof(decimal?)) { return (T)(object)decimal.Parse(value); }
+        if (type == typeof(DateTime) || type == typeof(DateTime?)) { return (T)(object)DateTime.Parse(value); }
+        if (type == typeof(Guid) || type == typeof(Guid?)) { return (T)(object)Guid.Parse(value); }
+
+        throw new InvalidOperationException($"Unable to parse type {type}");
     }
 }
