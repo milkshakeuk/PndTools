@@ -1,57 +1,56 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Xunit;
 
-namespace PndTools.Tests.Intergration
+namespace PndTools.Tests.Intergration;
+
+public class PxmlParserTests
 {
-    public class PxmlParserTests
+    [Fact]
+    public async Task Parse_WillParseValidPostHF6Pxml()
     {
-        [Fact]
-        public async Task Parse_WillParseValidPostHF6Pxml()
-        {
-            // Assign
-            var xml = await File.ReadAllTextAsync("Intergration/TestCase/validPxml.xml");
-            var sut = new PxmlParser();
+        // Arrange
+        var xml = await File.ReadAllTextAsync("Intergration/TestCase/validPxml.xml", TestContext.Current.CancellationToken);
+        var sut = new PxmlParser();
 
-            // Action 
-            var pxml = sut.Parse(xml);
+        // Act
+        var pxml = sut.Parse(xml);
 
-            // Assert
-            Assert.Equal("packageId", pxml.Package.Id);
-            Assert.Equal("1", pxml.Package.Version.Major);
-            Assert.Equal("0", pxml.Package.Version.Minor);
-            Assert.Equal("0", pxml.Package.Version.Release);
-            Assert.Equal("0", pxml.Package.Version.Build);
-            Assert.Equal("release", pxml.Package.Version.Type);
-            Assert.Equal("Package Author", pxml.Package.Author.Name);
-            Assert.Equal("http://www.example.org", pxml.Package.Author.Website);
-            Assert.Equal(1, pxml.Package.Titles.Count());
-            Assert.True(pxml.Package.Titles.All(title => title.Lang == "en_US" && title.Text == "Package Title"));
-            Assert.Equal(1, pxml.Package.Descriptions.Count());
-            Assert.True(pxml.Package.Descriptions.All(title => title.Lang == "en_US" && title.Text == "Package Description."));
-            Assert.Equal("icon.png", pxml.Package.Icon.Path);
-        }
+        // Assert
+        Assert.Equal("packageId", pxml.Package.Id);
+        Assert.Equal("1", pxml.Package.Version!.Major);
+        Assert.Equal("0", pxml.Package.Version.Minor);
+        Assert.Equal("0", pxml.Package.Version.Release);
+        Assert.Equal("0", pxml.Package.Version.Build);
+        Assert.Equal("release", pxml.Package.Version.Type);
+        Assert.Equal("Package Author", pxml.Package.Author!.Name);
+        Assert.Equal("http://www.example.org", pxml.Package.Author.Website);
+        var title = Assert.Single(pxml.Package.Titles);
+        Assert.Equal("en_US", title.Lang);
+        Assert.Equal("Package Title", title.Text);
+        var description = Assert.Single(pxml.Package.Descriptions);
+        Assert.Equal("en_US", description.Lang);
+        Assert.Equal("Package Description.", description.Text);
+        Assert.Equal("icon.png", pxml.Package.Icon!.Path);
+    }
 
-        [Fact]
-        public async Task Parse_WillParseValidPreHF6Pxml()
-        {
-            // Assign
-            var xml = await File.ReadAllTextAsync("Intergration/TestCase/validPreHf6Pxml.xml");
-            var sut = new PxmlParser();
+    [Fact]
+    public async Task Parse_WillParseValidPreHF6Pxml()
+    {
+        // Arrange
+        var xml = await File.ReadAllTextAsync("Intergration/TestCase/validPreHf6Pxml.xml", TestContext.Current.CancellationToken);
+        var sut = new PxmlParser();
 
-            // Action 
-            var pxml = sut.Parse(xml);
+        // Act
+        var pxml = sut.Parse(xml);
 
-            // Assert
-            Assert.Equal(1, pxml.Applications.Count());
-
-            var appliation = pxml.Applications.First();
-
-            Assert.Equal(1, appliation.Titles.Count());
-            Assert.True(appliation.Titles.All(title => title.Lang == "en_US" && title.Text == "Application Title"));
-            Assert.Equal(1, appliation.Descriptions.Count());
-            Assert.True(appliation.Descriptions.All(title => title.Lang == "en_US" && title.Text == "Application Description."));
-        }
+        // Assert
+        var application = Assert.Single(pxml.Applications);
+        var appTitle = Assert.Single(application.Titles);
+        Assert.Equal("en_US", appTitle.Lang);
+        Assert.Equal("Application Title", appTitle.Text);
+        var appDescription = Assert.Single(application.Descriptions);
+        Assert.Equal("en_US", appDescription.Lang);
+        Assert.Equal("Application Description.", appDescription.Text);
     }
 }
