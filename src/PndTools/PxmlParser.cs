@@ -8,13 +8,14 @@ using System.Xml.Linq;
 namespace PndTools;
 
 /// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>
-public class PxmlParser
+/// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>
+public static class PxmlParser
 {
     /// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>
     /// <param name="xml">The PXML string to parse.</param>
     /// <returns>The parsed <see cref="Pxml"/>.</returns>
     /// <exception cref="System.Xml.XmlException"><paramref name="xml"/> is not valid XML.</exception>
-    public Pxml Parse(string xml)
+    public static Pxml Parse(string xml)
     {
         var document = XDocument.Parse(xml, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
         var root = document.Root!;
@@ -40,9 +41,8 @@ public class PxmlParser
         };
     }
 
-    private static Application GetApplication(XElement application)
-    {
-        return new Application
+    private static Application GetApplication(XElement application) =>
+        new()
         {
             Id = application.Attribute<string>("id"),
             Version = GetVersion(application.XElement("version")),
@@ -55,17 +55,12 @@ public class PxmlParser
             PreviewPics = application.XElement("previewpics")!.XElements("pic").List(GetPic),
             Categories = application.XElement("categories")!.XElements("category").List(GetCategory)
         };
-    }
 
-    private static Icon? GetIcon(XElement? icon)
-    {
-        return icon is null ? null : new Icon(icon.Attribute<string>("src"));
-    }
+    private static Icon? GetIcon(XElement? icon) =>
+        icon is null ? null : new Icon(icon.Attribute<string>("src"));
 
-    private static Pic GetPic(XElement pic)
-    {
-        return new(pic.Attribute<string>("src"));
-    }
+    private static Pic GetPic(XElement pic) =>
+        new(pic.Attribute<string>("src"));
 
     private static IReadOnlyList<Title> GetTitles(XElement package)
     {
@@ -78,15 +73,11 @@ public class PxmlParser
         return [GetTitle(package.XElement("title")!)];
     }
 
-    private static Title GetTitle(XElement title)
-    {
-        return new(title.Attribute<string>("lang"), title.Value<string>());
-    }
+    private static Title GetTitle(XElement title) =>
+        new(title.Attribute<string>("lang"), title.Value<string>());
 
-    private static Info? GetInfo(XElement? info)
-    {
-        return info is null ? null : new Info(info.Attribute<string>("name"), info.Attribute<string>("type"), info.Attribute<string>("src"));
-    }
+    private static Info? GetInfo(XElement? info) =>
+        info is null ? null : new Info(info.Attribute<string>("name"), info.Attribute<string>("type"), info.Attribute<string>("src"));
 
     private static IReadOnlyList<Description> GetDescriptions(XElement package)
     {
@@ -99,38 +90,26 @@ public class PxmlParser
         return [GetDescription(package.XElement("description")!)];
     }
 
-    private static Description GetDescription(XElement desc)
-    {
-        return new(desc.Attribute<string>("lang"), desc.Value<string>());
-    }
+    private static Description GetDescription(XElement desc) =>
+        new(desc.Attribute<string>("lang"), desc.Value<string>());
 
-    private static Author? GetAuthor(XElement? author)
-    {
-        return author is null ? null : new Author(author.Attribute<string>("name"), author.Attribute<string>("website"));
-    }
+    private static Author? GetAuthor(XElement? author) =>
+        author is null ? null : new Author(author.Attribute<string>("name"), author.Attribute<string>("website"));
 
-    private static PxmlVersion? GetVersion(XElement? version)
-    {
-        return version is null ? null : new PxmlVersion(
+    private static PxmlVersion? GetVersion(XElement? version) =>
+        version is null ? null : new PxmlVersion(
             version.Attribute<string>("major"),
             version.Attribute<string>("minor"),
             version.Attribute<string>("release"),
             version.Attribute<string>("build"),
             version.Attribute<string>("type"));
-    }
 
-    private static License GetLicense(XElement license)
-    {
-        return new(license.Attribute<string>("name"), license.Attribute<string>("url"), license.Attribute<string>("sourcecodeurl"));
-    }
+    private static License GetLicense(XElement license) =>
+        new(license.Attribute<string>("name"), license.Attribute<string>("url"), license.Attribute<string>("sourcecodeurl"));
 
-    private static Category GetCategory(XElement category)
-    {
-        return new(category.Attribute<string>("name"), GetSubcategory(category.XElement("subcategory")));
-    }
+    private static Category GetCategory(XElement category) =>
+        new(category.Attribute<string>("name"), GetSubcategory(category.XElement("subcategory")));
 
-    private static Subcategory? GetSubcategory(XElement? subcategory)
-    {
-        return subcategory is null ? null : new Subcategory(subcategory.Attribute<string>("name"));
-    }
+    private static Subcategory? GetSubcategory(XElement? subcategory) =>
+        subcategory is null ? null : new Subcategory(subcategory.Attribute<string>("name"));
 }
