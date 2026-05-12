@@ -59,6 +59,44 @@ public static class StreamExtensions
         };
     }
 
+    /// <summary>
+    /// Asynchronously searches for a UTF-8 encoded string in the stream, returning the zero-based
+    /// byte index of the first match in the given direction, or <c>-1</c> if not found.
+    /// </summary>
+    /// <param name="stream">The stream to search.</param>
+    /// <param name="input">The string to search for.</param>
+    /// <param name="direction">The direction to traverse the stream.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The zero-based byte index of the first match, or <c>-1</c> if not found.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="input"/> is <c>null</c>.</exception>
+    public static Task<long> FindAsync(this Stream stream, string input, Direction direction = Direction.Forward, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(input);
+        return stream.FindAsync(Encoding.UTF8.GetBytes(input), direction, cancellationToken);
+    }
+
+    /// <summary>
+    /// Asynchronously searches for a byte sequence in the stream, returning the zero-based byte
+    /// index of the first match in the given direction, or <c>-1</c> if not found.
+    /// </summary>
+    /// <param name="stream">The stream to search.</param>
+    /// <param name="input">The byte sequence to search for.</param>
+    /// <param name="direction">The direction to traverse the stream.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The zero-based byte index of the first match, or <c>-1</c> if not found.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
+    public static Task<long> FindAsync(this Stream stream, ReadOnlyMemory<byte> input, Direction direction = Direction.Forward, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+        return direction switch
+        {
+            Direction.Forward => TraverseForwardsAsync(stream, input, cancellationToken),
+            Direction.Backwards => TraverseBackwardsAsync(stream, input, cancellationToken),
+            _ => Task.FromResult(-1L)
+        };
+    }
+
     /// <summary>Returns the bytes between <paramref name="start"/> and <paramref name="end"/> in the stream.</summary>
     /// <param name="stream">The stream to read from.</param>
     /// <param name="start">The zero-based start position, inclusive.</param>
@@ -97,6 +135,38 @@ public static class StreamExtensions
         ArgumentNullException.ThrowIfNull(stream);
         var buffer = new byte[stream.Length];
         stream.ReadExactly(buffer);
+        return buffer;
+    }
+
+    /// <summary>
+    /// Asynchronously returns the bytes between <paramref name="start"/> and <paramref name="end"/> in the stream.
+    /// </summary>
+    /// <param name="stream">The stream to read from.</param>
+    /// <param name="start">The zero-based start position, inclusive.</param>
+    /// <param name="end">The zero-based end position, exclusive.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A byte array containing the bytes in the specified range.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="start"/> is less than zero, or <paramref name="end"/> is greater than the stream length.
+    /// </exception>
+    public static async Task<byte[]> GetBytesAsync(this Stream stream, long start, long end, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(stream);
+
+        if (end > stream.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(end), $"End position cannot be greater than stream length ({stream.Length}).");
+        }
+
+        if (start < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(start), "Start position cannot be less than 0.");
+        }
+
+        var buffer = new byte[end - start];
+        stream.Position = start;
+        await stream.ReadExactlyAsync(buffer, cancellationToken).ConfigureAwait(false);
         return buffer;
     }
 
@@ -148,6 +218,60 @@ public static class StreamExtensions
             stream.ReadExactly(buffer, 0, toRead);
 
             var idx = buffer.AsSpan(0, toRead).LastIndexOf(pattern);
+
+            if (idx >= 0)
+            {
+                return chunkStart + idx;
+            }
+        }
+
+        return -1;
+    }
+
+    private static async Task<long> TraverseForwardsAsync(Stream stream, ReadOnlyMemory<byte> pattern, CancellationToken cancellationToken)
+    {
+        var overlap = pattern.Length - 1;
+        var step = ChunkSize - overlap;
+        var buffer = new byte[ChunkSize];
+        var streamLength = stream.Length;
+
+        stream.Position = 0;
+
+        for (long chunkStart = 0; chunkStart <= streamLength - pattern.Length; chunkStart += step)
+        {
+            var toRead = (int)Math.Min(ChunkSize, streamLength - chunkStart);
+            await stream.ReadExactlyAsync(buffer.AsMemory(0, toRead), cancellationToken).ConfigureAwait(false);
+
+            var idx = buffer.AsSpan(0, toRead).IndexOf(pattern.Span);
+
+            if (idx >= 0)
+            {
+                return chunkStart + idx;
+            }
+
+            // Rewind to preserve the overlap region for the next chunk
+            stream.Position = chunkStart + step;
+        }
+
+        return -1;
+    }
+
+    private static async Task<long> TraverseBackwardsAsync(Stream stream, ReadOnlyMemory<byte> pattern, CancellationToken cancellationToken)
+    {
+        var overlap = pattern.Length - 1;
+        var step = ChunkSize - overlap;
+        var buffer = new byte[ChunkSize];
+        var streamLength = stream.Length;
+
+        for (long chunkEnd = streamLength; chunkEnd > 0; chunkEnd -= step)
+        {
+            var chunkStart = Math.Max(0, chunkEnd - ChunkSize);
+            var toRead = (int)(chunkEnd - chunkStart);
+
+            stream.Position = chunkStart;
+            await stream.ReadExactlyAsync(buffer.AsMemory(0, toRead), cancellationToken).ConfigureAwait(false);
+
+            var idx = buffer.AsSpan(0, toRead).LastIndexOf(pattern.Span);
 
             if (idx >= 0)
             {

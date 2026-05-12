@@ -8,7 +8,6 @@ using System.Xml.Linq;
 namespace PndTools;
 
 /// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>
-/// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>
 public static class PxmlParser
 {
     /// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>

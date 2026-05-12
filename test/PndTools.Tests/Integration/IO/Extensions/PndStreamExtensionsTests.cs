@@ -230,6 +230,250 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
+    public async Task GetPxmlAsync_ValidPndStream_ReturnsPxml()
+    {
+        // Arrange
+        var expectedStart = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>{Environment.NewLine}<PXML";
+        const string expectedEnd = "</PXML>";
+
+        using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+
+        // Act
+        var result = await stream.GetPxmlAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.StartsWith(expectedStart, result, StringComparison.Ordinal);
+        Assert.EndsWith(expectedEnd, result, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetPxmlAsync_PxmlNotInStream_ThrowsInvalidPndException()
+    {
+        // Arrange
+        using Stream stream = StreamTestHelper.GenerateRandomStream();
+
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<InvalidPndException>(() => stream.GetPxmlAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task GetPxmlAsync_NullStream_ThrowsArgumentNullException()
+    {
+        // Arrange
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => (null as Stream)!.GetPxmlAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task GetIconAsync_ValidPndStream_ReturnsIconBytes()
+    {
+        // Arrange
+        var expected = await File.ReadAllBytesAsync("Integration/TestExpectation/SORR.png", TestContext.Current.CancellationToken);
+
+        using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+
+        // Act
+        var result = await stream.GetIconAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task GetIconAsync_IconNotInStream_ThrowsInvalidPndException()
+    {
+        // Arrange
+        using Stream stream = StreamTestHelper.GenerateRandomStream();
+
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<InvalidPndException>(() => stream.GetIconAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task GetIconAsync_NullStream_ThrowsArgumentNullException()
+    {
+        // Arrange
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => (null as Stream)!.GetIconAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task SavePxmlAsync_ValidPndStream_WritesPxmlToFile()
+    {
+        // Arrange
+        var path = Path.GetTempFileName();
+
+        try
+        {
+            using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+            var expected = await stream.GetPxmlAsync(TestContext.Current.CancellationToken);
+
+            stream.Position = 0;
+
+            // Act
+            await stream.SavePxmlAsync(path, TestContext.Current.CancellationToken);
+
+            // Assert
+            var written = await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
+            Assert.Equal(expected, written);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task SavePxmlAsync_NullStream_ThrowsArgumentNullException()
+    {
+        // Arrange
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => (null as Stream)!.SavePxmlAsync("output.xml", TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task SavePxmlAsync_NullPath_ThrowsArgumentNullException()
+    {
+        // Arrange
+        using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => stream.SavePxmlAsync(null!, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task SaveIconAsync_ValidPndStream_WritesIconToFile()
+    {
+        // Arrange
+        var path = Path.GetTempFileName();
+
+        try
+        {
+            using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+            var expected = await stream.GetIconAsync(TestContext.Current.CancellationToken);
+
+            stream.Position = 0;
+
+            // Act
+            await stream.SaveIconAsync(path, TestContext.Current.CancellationToken);
+
+            // Assert
+            var written = await File.ReadAllBytesAsync(path, TestContext.Current.CancellationToken);
+            Assert.Equal(expected, written);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task SaveIconAsync_NullStream_ThrowsArgumentNullException()
+    {
+        // Arrange
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => (null as Stream)!.SaveIconAsync("output.png", TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task SaveIconAsync_NullPath_ThrowsArgumentNullException()
+    {
+        // Arrange
+        using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => stream.SaveIconAsync(null!, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task DetectArchiveTypeAsync_SquashFsPnd_ReturnsSquashFs()
+    {
+        // Arrange
+        const PndArchiveType expected = PndArchiveType.SquashFs;
+        using Stream stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+
+        // Act
+        var result = await stream.DetectArchiveTypeAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task DetectArchiveTypeAsync_IsoPnd_ReturnsIso()
+    {
+        // Arrange
+        const PndArchiveType expected = PndArchiveType.Iso;
+        using Stream stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
+
+        // Act
+        var result = await stream.DetectArchiveTypeAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task DetectArchiveTypeAsync_UnknownMagicBytes_ReturnsUnknown()
+    {
+        // Arrange
+        const PndArchiveType expected = PndArchiveType.Unknown;
+        using var stream = new MemoryStream([0x00, 0x01, 0x02, 0x03]);
+
+        // Act
+        var result = await stream.DetectArchiveTypeAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task DetectArchiveTypeAsync_ShortStream_ReturnsUnknown()
+    {
+        // Arrange
+        const PndArchiveType expected = PndArchiveType.Unknown;
+        using var stream = new MemoryStream([0x01, 0x02]);
+
+        // Act
+        var result = await stream.DetectArchiveTypeAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public async Task DetectArchiveTypeAsync_NullStream_ThrowsArgumentNullException()
+    {
+        // Arrange
+        // Act
+        // Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => (null as Stream)!.DetectArchiveTypeAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task DetectArchiveTypeAsync_AnyStream_PreservesStreamPosition()
+    {
+        // Arrange
+        using var stream = new MemoryStream([0x68, 0x73, 0x71, 0x73]);
+        stream.Position = 2;
+        const long expected = 2;
+
+        // Act
+        await stream.DetectArchiveTypeAsync(TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(expected, stream.Position);
+    }
+
+    [Fact]
     public void DetectArchiveType_AnyStream_PreservesStreamPosition()
     {
         // Arrange
