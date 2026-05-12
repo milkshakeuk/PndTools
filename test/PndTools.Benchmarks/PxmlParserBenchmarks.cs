@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 
 using BenchmarkDotNet.Attributes;
-using System.Xml.Linq;
 
 namespace PndTools.Benchmarks;
 
@@ -10,12 +9,12 @@ namespace PndTools.Benchmarks;
 [MemoryDiagnoser]
 public class PxmlParserBenchmarks
 {
-    private XDocument _document = null!;
+    private string _pxmlString = null!;
 
     [GlobalSetup]
     public void Setup() =>
-        _document = XDocument.Load("TestCase/validPxml.xml");
+        _pxmlString = File.ReadAllText("TestCase/validPxml.xml");
 
     [Benchmark]
-    public void Parse() => PxmlParser.Parse(_document);
+    public void Parse() => PxmlParser.Parse(_pxmlString);
 }
