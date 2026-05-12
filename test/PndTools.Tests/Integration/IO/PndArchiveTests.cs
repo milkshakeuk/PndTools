@@ -11,7 +11,7 @@ namespace PndTools.Tests.Integration.IO;
 public class PndArchiveTests
 {
     [Fact]
-    public void Open_WillThrowArgumentNullExceptionWhenStreamIsNull()
+    public void Open_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -20,7 +20,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void Open_WillThrowInvalidPndExceptionWhenFileTypeIsUnknown()
+    public void Open_UnknownFileType_ThrowsInvalidPndException()
     {
         // Arrange
         using var stream = new MemoryStream([0x00, 0x01, 0x02, 0x03]);
@@ -31,7 +31,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void Open_WillSetArchiveTypeToSquashFsForSquashFsPnd()
+    public void Open_SquashFsPnd_SetsArchiveTypeToSquashFs()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
@@ -44,7 +44,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void Open_WillSetArchiveTypeToIsoForIsoPnd()
+    public void Open_IsoPnd_SetsArchiveTypeToIso()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
@@ -57,7 +57,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ListFiles_WillReturnFilesFromSquashFsPnd()
+    public void ListFiles_SquashFsPnd_ReturnsFiles()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
@@ -71,7 +71,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ListFiles_WillReturnFilesFromIsoPnd()
+    public void ListFiles_IsoPnd_ReturnsFiles()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
@@ -85,7 +85,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ExtractFile_WillExtractFileFromSquashFsPnd()
+    public void ExtractFile_SquashFsPnd_ExtractsFile()
     {
         // Arrange
         var outputPath = Path.GetTempFileName();
@@ -109,7 +109,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ExtractFile_WillExtractFileFromIsoPnd()
+    public void ExtractFile_IsoPnd_ExtractsFile()
     {
         // Arrange
         var outputPath = Path.GetTempFileName();
@@ -133,7 +133,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ExtractFile_WillThrowFileNotFoundExceptionWhenPathDoesNotExistInArchive()
+    public void ExtractFile_PathNotInArchive_ThrowsFileNotFoundException()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
@@ -145,7 +145,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ExtractAll_WillExtractAllFilesFromSquashFsPnd()
+    public void ExtractAll_SquashFsPnd_ExtractsAllFiles()
     {
         // Arrange
         var outputDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -172,7 +172,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ExtractAll_WillExtractAllFilesFromIsoPnd()
+    public void ExtractAll_IsoPnd_ExtractsAllFiles()
     {
         // Arrange
         var outputDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -199,7 +199,86 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ListFiles_WillThrowObjectDisposedExceptionAfterDispose()
+    public void ExtractFiles_SquashFsPnd_ExtractsRequestedFiles()
+    {
+        // Arrange
+        var outputDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        try
+        {
+            Directory.CreateDirectory(outputDirectory);
+
+            using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+            using var archive = PndArchive.Open(stream);
+            var paths = archive.ListFiles().Take(2).ToList();
+
+            // Act
+            archive.ExtractFiles(paths, outputDirectory);
+
+            // Assert
+            var extracted = Directory.GetFiles(outputDirectory, "*", SearchOption.AllDirectories).Length;
+            Assert.Equal(2, extracted);
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ExtractFiles_IsoPnd_ExtractsRequestedFiles()
+    {
+        // Arrange
+        var outputDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        try
+        {
+            Directory.CreateDirectory(outputDirectory);
+
+            using var stream = File.OpenRead("Integration/TestCase/Bump3.pnd");
+            using var archive = PndArchive.Open(stream);
+            var paths = archive.ListFiles().Take(2).ToList();
+
+            // Act
+            archive.ExtractFiles(paths, outputDirectory);
+
+            // Assert
+            var extracted = Directory.GetFiles(outputDirectory, "*", SearchOption.AllDirectories).Length;
+            Assert.Equal(2, extracted);
+        }
+        finally
+        {
+            Directory.Delete(outputDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ExtractFiles_PathNotInArchive_ThrowsFileNotFoundException()
+    {
+        // Arrange
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+        using var archive = PndArchive.Open(stream);
+
+        // Act
+        // Assert
+        Assert.Throws<FileNotFoundException>(() => archive.ExtractFiles(["/does-not-exist.bin"], Path.GetTempPath()));
+    }
+
+    [Fact]
+    public void ExtractFiles_DisposedArchive_ThrowsObjectDisposedException()
+    {
+        // Arrange
+        using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
+        var archive = PndArchive.Open(stream);
+        archive.Dispose();
+
+        // Act
+        // Assert
+        Assert.Throws<ObjectDisposedException>(() => archive.ExtractFiles(["/PXML.xml"], Path.GetTempPath()));
+    }
+
+    [Fact]
+    public void ListFiles_DisposedArchive_ThrowsObjectDisposedException()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
@@ -212,7 +291,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ExtractFile_WillThrowObjectDisposedExceptionAfterDispose()
+    public void ExtractFile_DisposedArchive_ThrowsObjectDisposedException()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
@@ -225,7 +304,7 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void ExtractAll_WillThrowObjectDisposedExceptionAfterDispose()
+    public void ExtractAll_DisposedArchive_ThrowsObjectDisposedException()
     {
         // Arrange
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");

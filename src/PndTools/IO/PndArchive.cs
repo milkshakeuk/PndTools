@@ -82,6 +82,32 @@ public sealed class PndArchive : IDisposable
     }
 
     /// <summary>
+    /// Extracts a subset of files from the archive into <paramref name="outputDirectory"/>,
+    /// preserving the internal directory structure.
+    /// </summary>
+    /// <param name="internalPaths">The paths of the files to extract.</param>
+    /// <param name="outputDirectory">The destination directory on disk.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="internalPaths"/> or <paramref name="outputDirectory"/> is <c>null</c>.</exception>
+    /// <exception cref="ObjectDisposedException">The archive has been disposed.</exception>
+    /// <exception cref="FileNotFoundException">One of <paramref name="internalPaths"/> does not exist in the archive.</exception>
+    public void ExtractFiles(IEnumerable<string> internalPaths, string outputDirectory)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(internalPaths);
+        ArgumentNullException.ThrowIfNull(outputDirectory);
+
+        foreach (var internalPath in internalPaths)
+        {
+            if (!_fileSystem.FileExists(internalPath))
+            {
+                throw new FileNotFoundException($"File not found in archive: {internalPath}", internalPath);
+            }
+
+            ExtractToDirectory(internalPath, outputDirectory);
+        }
+    }
+
+    /// <summary>
     /// Extracts all files from the archive into <paramref name="outputDirectory"/>,
     /// preserving the internal directory structure.
     /// </summary>
@@ -95,14 +121,7 @@ public sealed class PndArchive : IDisposable
 
         foreach (var internalPath in _fileSystem.GetFiles("", "*", SearchOption.AllDirectories))
         {
-            var relativePath = internalPath.TrimStart('\\', '/').Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-            var outputPath = Path.Combine(outputDirectory, relativePath);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-
-            using var entry = _fileSystem.OpenFile(internalPath, FileMode.Open, FileAccess.Read);
-            using var output = File.Create(outputPath);
-            entry.CopyTo(output);
+            ExtractToDirectory(internalPath, outputDirectory);
         }
     }
 
@@ -158,6 +177,18 @@ public sealed class PndArchive : IDisposable
 
         _fileSystem.Dispose();
         _disposed = true;
+    }
+
+    private void ExtractToDirectory(string internalPath, string outputDirectory)
+    {
+        var relativePath = internalPath.TrimStart('\\', '/').Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+        var outputPath = Path.Combine(outputDirectory, relativePath);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+
+        using var entry = _fileSystem.OpenFile(internalPath, FileMode.Open, FileAccess.Read);
+        using var output = File.Create(outputPath);
+        entry.CopyTo(output);
     }
 
     private static DiscFileSystem CreateFileSystem(Stream stream, PndArchiveType archiveType) =>
