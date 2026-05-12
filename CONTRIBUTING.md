@@ -2,7 +2,13 @@
 
 ## Getting started
 
-You will need the [.NET 10 SDK][dotnet] and [Node.js][nodejs] (for commit hooks).
+You will need the [.NET 10 SDK][dotnet] and [Node.js][nodejs] 24 LTS (for commit hooks). If you use [fnm][fnm] to manage Node versions:
+
+```bash
+fnm use --install-if-missing
+```
+
+Then set up the project:
 
 ```bash
 dotnet restore
@@ -60,7 +66,7 @@ The `scope` is optional but encouraged — use the affected area, e.g. `io`, `xm
 ### Commit types
 
 | Type | Purpose | SemVer impact |
-|------|---------|---------------|
+| ---- | ------- | ------------- |
 | `feat` | New feature or capability | Minor bump (1.**x**.0) |
 | `fix` | Bug fix | Patch bump (1.0.**x**) |
 | `docs` | Documentation only | None |
@@ -90,18 +96,20 @@ Feature commits should include their tests in the same commit.
 
 ## Commit message template
 
-To load the project commit template automatically, run:
+The `prepare` script configures `.gitmessage` as your commit template automatically when you run `npm install`. The template provides a guided scaffold with type, scope, and SemVer guidance each time you open your editor for a new commit.
+
+If you need to apply it manually:
 
 ```bash
 git config commit.template .gitmessage
 ```
 
-The template at `.gitmessage` provides a guided scaffold the first time you open your editor for a new commit.
-
 [claude-md]: CLAUDE.md
 [conventional-commits]: https://www.conventionalcommits.org
 [dotnet]: https://dotnet.microsoft.com/download
+[fnm]: https://github.com/Schniz/fnm
 [markdownlint-cli2]: https://github.com/DavidAnson/markdownlint-cli2
 [nodejs]: https://nodejs.org
+[prek]: https://prek.j178.dev
 [release-please]: https://github.com/googleapis/release-please
 [semantic-release]: https://github.com/semantic-release/semantic-release
