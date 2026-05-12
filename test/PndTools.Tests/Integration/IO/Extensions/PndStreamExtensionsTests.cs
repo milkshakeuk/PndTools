@@ -10,7 +10,7 @@ namespace PndTools.Tests.Integration.IO.Extensions;
 public class PndStreamExtensionsTests
 {
     [Fact]
-    public void GetPxml_WillReturnPxmlFromPndFileStream()
+    public void GetPxml_ValidPndStream_ReturnsPxml()
     {
         // Arrange
         var expectedStart = $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>{Environment.NewLine}<PXML";
@@ -27,7 +27,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void GetIcon_WillReturnIconBytesFromPndFile()
+    public void GetIcon_ValidPndStream_ReturnsIconBytes()
     {
         // Arrange
         var expected = File.ReadAllBytes("Integration/TestExpectation/SORR.png");
@@ -42,7 +42,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void SavePxml_WillWritePxmlToFile()
+    public void SavePxml_ValidPndStream_WritesPxmlToFile()
     {
         // Arrange
         var path = Path.GetTempFileName();
@@ -68,7 +68,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void SaveIcon_WillWriteIconToFile()
+    public void SaveIcon_ValidPndStream_WritesIconToFile()
     {
         // Arrange
         var path = Path.GetTempFileName();
@@ -94,7 +94,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void GetPxml_WillThrowInvalidPndExceptionIfPxmlNotFound()
+    public void GetPxml_PxmlNotInArchive_ThrowsInvalidPndException()
     {
         // Arrange
         using Stream stream = StreamTestHelper.GenerateRandomStream();
@@ -105,7 +105,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void GetPxml_WillThrowNullArgumentExceptionWhenNullStreamIsSupplied()
+    public void GetPxml_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -114,7 +114,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void GetIcon_WillThrowInvalidPndExceptionIfIconNotFound()
+    public void GetIcon_IconNotInArchive_ThrowsInvalidPndException()
     {
         // Arrange
         using Stream stream = StreamTestHelper.GenerateRandomStream();
@@ -125,7 +125,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void GetIcon_WillThrowNullArgumentExceptionWhenNullStreamIsSupplied()
+    public void GetIcon_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -134,7 +134,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void SavePxml_WillThrowArgumentNullExceptionWhenNullStreamIsSupplied()
+    public void SavePxml_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -143,7 +143,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void SaveIcon_WillThrowArgumentNullExceptionWhenNullStreamIsSupplied()
+    public void SaveIcon_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -152,7 +152,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void DetectArchiveType_WillReturnSquashFsForLittleEndianMagic()
+    public void DetectArchiveType_LittleEndianMagicBytes_ReturnsSquashFs()
     {
         // Arrange
         using var stream = new MemoryStream([0x68, 0x73, 0x71, 0x73]); // "hsqs"
@@ -165,7 +165,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void DetectArchiveType_WillReturnSquashFsForBigEndianMagic()
+    public void DetectArchiveType_BigEndianMagicBytes_ReturnsSquashFs()
     {
         // Arrange
         using var stream = new MemoryStream([0x73, 0x71, 0x73, 0x68]); // "sqsh"
@@ -178,7 +178,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void DetectArchiveType_WillReturnIsoForIso9660Magic()
+    public void DetectArchiveType_Iso9660MagicBytes_ReturnsIso()
     {
         // Arrange
         const int isoOffset = 0x8001;
@@ -195,7 +195,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void DetectArchiveType_WillReturnUnknownWhenMagicBytesDoNotMatch()
+    public void DetectArchiveType_UnknownMagicBytes_ReturnsUnknown()
     {
         // Arrange
         using var stream = new MemoryStream([0x00, 0x01, 0x02, 0x03]);
@@ -208,7 +208,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void DetectArchiveType_WillReturnUnknownWhenStreamIsTooShort()
+    public void DetectArchiveType_ShortStream_ReturnsUnknown()
     {
         // Arrange
         using var stream = new MemoryStream([0x01, 0x02]);
@@ -221,7 +221,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void DetectArchiveType_WillThrowArgumentNullExceptionWhenStreamIsNull()
+    public void DetectArchiveType_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -230,7 +230,7 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void DetectArchiveType_WillNotAlterStreamPosition()
+    public void DetectArchiveType_AnyStream_PreservesStreamPosition()
     {
         // Arrange
         using var stream = new MemoryStream([0x68, 0x73, 0x71, 0x73]);
@@ -248,7 +248,7 @@ public class PndStreamExtensionsTests
     [InlineData("Integration/TestCase/SORR.pnd", PndArchiveType.SquashFs)]
     [InlineData("Integration/TestCase/Bump3.pnd", PndArchiveType.Iso)]
     [InlineData("Integration/TestCase/abbaye.pnd", PndArchiveType.SquashFs)]
-    public void DetectArchiveType_WillReturnCorrectTypeForRealPndFiles(string path, PndArchiveType expected)
+    public void DetectArchiveType_RealPndFile_ReturnsCorrectArchiveType(string path, PndArchiveType expected)
     {
         // Arrange
         using var stream = File.OpenRead(path);

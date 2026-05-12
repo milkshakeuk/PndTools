@@ -6,7 +6,7 @@ namespace PndTools.Tests.Unit;
 public class ArgumentCollectionExceptionTests
 {
     [Fact]
-    public void ThrowIfNullOrEmpty_WillThrowArgumentNullExceptionWhenCollectionIsNull()
+    public void ThrowIfNullOrEmpty_NullCollection_ThrowsArgumentNullException()
     {
         // Arrange
         List<string>? collection = null;
@@ -17,7 +17,7 @@ public class ArgumentCollectionExceptionTests
     }
 
     [Fact]
-    public void ThrowIfNullOrEmpty_WillThrowArgumentCollectionExceptionWhenCollectionIsEmpty()
+    public void ThrowIfNullOrEmpty_EmptyCollection_ThrowsArgumentCollectionException()
     {
         // Arrange
         var collection = new List<string>();
@@ -28,7 +28,7 @@ public class ArgumentCollectionExceptionTests
     }
 
     [Fact]
-    public void ThrowIfNullOrEmpty_WillNotThrowWhenCollectionHasItems()
+    public void ThrowIfNullOrEmpty_CollectionWithItems_DoesNotThrow()
     {
         // Arrange
         var collection = new List<string> { "item" };
@@ -39,7 +39,7 @@ public class ArgumentCollectionExceptionTests
     }
 
     [Fact]
-    public void ThrowIfNullOrEmpty_WillIncludeParamNameInExceptionMessage()
+    public void ThrowIfNullOrEmpty_NullCollection_IncludesParamNameInMessage()
     {
         // Arrange
         var myCollection = new List<string>();

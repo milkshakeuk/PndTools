@@ -9,7 +9,7 @@ namespace PndTools.Tests.Unit.Models;
 public class PndToolsJsonContextTests
 {
     [Fact]
-    public void Serialise_WillUseCamelCasePropertyNames()
+    public void Serialise_Pxml_UsesCamelCasePropertyNames()
     {
         // Arrange
         var pxml = new Pxml
@@ -27,7 +27,7 @@ public class PndToolsJsonContextTests
     }
 
     [Fact]
-    public void Serialise_WillIncludeNestedProperties()
+    public void Serialise_PxmlWithNestedProperties_IncludesAllProperties()
     {
         // Arrange
         var pxml = new Pxml
@@ -50,7 +50,7 @@ public class PndToolsJsonContextTests
     }
 
     [Fact]
-    public void Serialise_WillSerialiseEmptyApplicationsAsEmptyArray()
+    public void Serialise_PxmlWithEmptyApplications_SerialisesAsEmptyArray()
     {
         // Arrange
         var pxml = new Pxml

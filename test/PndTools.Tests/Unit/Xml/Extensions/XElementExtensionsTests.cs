@@ -9,7 +9,7 @@ namespace PndTools.Tests.Unit.Xml.Extensions;
 public class XElementExtensionsTests
 {
     [Fact]
-    public void LineNumber_WillReturnMinusOneWhenElementIsNull()
+    public void LineNumber_NullElement_ReturnsMinusOne()
     {
         // Arrange
         // Act
@@ -20,7 +20,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void LineNumber_WillReturnMinusOneWhenElementHasNoLineInfo()
+    public void LineNumber_ElementWithNoLineInfo_ReturnsMinusOne()
     {
         // Arrange
         var element = new XElement("root");
@@ -33,7 +33,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void LineNumber_WillReturnLineNumberWhenElementHasLineInfo()
+    public void LineNumber_ElementWithLineInfo_ReturnsLineNumber()
     {
         // Arrange
         var element = XDocument.Parse("<root><child /></root>", LoadOptions.SetLineInfo)
@@ -47,7 +47,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void LinePosition_WillReturnMinusOneWhenElementIsNull()
+    public void LinePosition_NullElement_ReturnsMinusOne()
     {
         // Arrange
         // Act
@@ -58,7 +58,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void Position_WillReturnLineAndPositionAsString()
+    public void Position_ElementWithLineInfo_ReturnsLineAndPositionString()
     {
         // Arrange
         var element = XDocument.Parse("<root><child /></root>", LoadOptions.SetLineInfo)
@@ -72,7 +72,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void Attribute_WillReturnDefaultWhenElementIsNull()
+    public void Attribute_NullElement_ReturnsDefault()
     {
         // Arrange
         // Act
@@ -83,7 +83,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void Attribute_WillReturnDefaultWhenAttributeIsMissing()
+    public void Attribute_MissingAttribute_ReturnsDefault()
     {
         // Arrange
         var element = new XElement("title");
@@ -96,7 +96,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void Attribute_WillReturnParsedValueWhenAttributeIsPresent()
+    public void Attribute_PresentAttribute_ReturnsParsedValue()
     {
         // Arrange
         const string expected = "en_US";
@@ -110,7 +110,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void Attribute_WillReturnParsedIntValue()
+    public void Attribute_IntAttribute_ReturnsParsedInt()
     {
         // Arrange
         const int expected = 42;
@@ -124,7 +124,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void List_WillReturnEmptyListWhenEnumerableIsNull()
+    public void List_NullEnumerable_ReturnsEmptyList()
     {
         // Arrange
         // Act
@@ -135,7 +135,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void List_WillProjectEachElement()
+    public void List_EnumerableWithElements_ProjectsEachElement()
     {
         // Arrange
         var elements = new[]
@@ -153,7 +153,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void Value_WillReturnDefaultWhenElementIsNull()
+    public void Value_NullElement_ReturnsDefault()
     {
         // Arrange
         // Act
@@ -164,7 +164,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void Value_WillReturnParsedValue()
+    public void Value_ElementWithValue_ReturnsParsedValue()
     {
         // Arrange
         const int expected = 7;
@@ -178,7 +178,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void XElement_WillReturnChildElementByLocalName()
+    public void XElement_ExistingChildName_ReturnsChildElement()
     {
         // Arrange
         var parent = new XElement("parent", new XElement("child", "value"));
@@ -192,7 +192,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void XElement_WillReturnNullWhenChildNotFound()
+    public void XElement_NonExistentChildName_ReturnsNull()
     {
         // Arrange
         var parent = new XElement("parent");
@@ -205,7 +205,7 @@ public class XElementExtensionsTests
     }
 
     [Fact]
-    public void XElements_WillReturnAllMatchingChildren()
+    public void XElements_MatchingChildren_ReturnsAll()
     {
         // Arrange
         var parent = new XElement("parent",

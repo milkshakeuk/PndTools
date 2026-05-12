@@ -15,7 +15,7 @@ A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package 
 
 ## Project structure
 
-```
+```text
 src/PndTools/
   IO/
     Extensions/   — PndStreamExtensions, StreamExtensions
@@ -67,7 +67,7 @@ private static ReadOnlySpan<byte> PxmlStart => "<PXML"u8;
 ## Test conventions
 
 - Arrange / Act / Assert comments in every test
-- Preferred naming: `MethodName_WillBehaviour_WhenCondition`
+- Naming follows the [MS convention][ms-test-naming]: `MethodName_Scenario_ExpectedBehavior` — e.g. `Open_NullStream_ThrowsArgumentNullException`
 - Use `expected` variable rather than inlining expected values in assertions
 - `Assert.Single` for single-item collections, not `Assert.Equal(1, collection.Count)`
 - Null `InlineData` entries require nullable parameter types in the test method
@@ -89,4 +89,5 @@ All `.md` files are linted with `markdownlint-cli2` using `.markdownlint.json`. 
 - No `PndFileType` / `DetectFileType` naming — renamed to `PndArchiveType` / `DetectArchiveType` to reflect that it describes the archive format, not the file type
 
 [conventional-commits]: https://www.conventionalcommits.org
+[ms-test-naming]: https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices#follow-test-naming-standards
 [prek]: https://prek.j178.dev

@@ -10,7 +10,7 @@ namespace PndTools.Tests.Unit.Extentions;
 public class StreamExtensionsTests
 {
     [Fact]
-    public void Find_WillReturnMinusOneWhenStringNotFound()
+    public void Find_StringNotInStream_ReturnsMinusOne()
     {
         // Arrange
         const int expected = -1;
@@ -25,7 +25,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void Find_WillReturnBytePositionWhenStringFound()
+    public void Find_StringInStream_ReturnsBytePosition()
     {
         // Arrange
         const int expected = 10;
@@ -40,7 +40,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void Find_WillThrowArgumentNullExceptionWhenStreamIsNull()
+    public void Find_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -49,7 +49,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void Find_WillThrowArgumentNullExceptionWhenInputIsNull()
+    public void Find_NullInput_ThrowsArgumentNullException()
     {
         // Arrange
         using Stream stream = StreamTestHelper.GenerateRandomStream();
@@ -60,7 +60,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void GetBytes_WillReturnByteArraySectionOfStreamFromStartAndEndPositionsSupplied()
+    public void GetBytes_ValidStartAndEndPositions_ReturnsByteArraySection()
     {
         // Arrange
         var expected = new byte[] { 120, 116 };
@@ -75,7 +75,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void GetBytes_WillThrowExceptionIfStartPositionLessThanZero()
+    public void GetBytes_StartPositionLessThanZero_ThrowsException()
     {
         // Arrange
         const string expectedParamName = "start";
@@ -90,7 +90,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void GetBytes_WillThrowExceptionIfEndPositionGreaterThanStreamLength()
+    public void GetBytes_EndPositionGreaterThanStreamLength_ThrowsException()
     {
         // Arrange
         const string expectedParamName = "end";
@@ -105,7 +105,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void GetBytes_WillThrowArgumentNullExceptionWhenTheStreamIsNull()
+    public void GetBytes_NullStream_ThrowsArgumentNullException()
     {
         // Arrange
         // Act
@@ -114,7 +114,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void GetBytes_WillReturnByteArrayOfStream()
+    public void GetBytes_EntireStream_ReturnsByteArray()
     {
         // Arrange
         var expected = StreamTestHelper.GenerateRandomBytes();
@@ -129,7 +129,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void Find_WillReturnLastOccurrenceWhenSearchingBackwards()
+    public void Find_BackwardSearch_ReturnsLastOccurrence()
     {
         // Arrange
         const int expected = 13;
@@ -144,7 +144,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void Find_WillReturnMinusOneWhenStringNotFoundSearchingBackwards()
+    public void Find_StringNotInStream_ReturnsMinusOneSearchingBackwards()
     {
         // Arrange
         const int expected = -1;
@@ -159,7 +159,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void Find_WillReturnBytePositionWhenByteArrayFound()
+    public void Find_ByteArrayInStream_ReturnsBytePosition()
     {
         // Arrange
         const int expected = 10;
@@ -174,7 +174,7 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void Find_WillReturnMinusOneWhenByteArrayNotFound()
+    public void Find_ByteArrayNotInStream_ReturnsMinusOne()
     {
         // Arrange
         const int expected = -1;

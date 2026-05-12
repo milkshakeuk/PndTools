@@ -14,7 +14,7 @@ public class PxmlValidatorTests
     [InlineData(null, typeof(ArgumentNullException))]
     [InlineData("", typeof(ArgumentException))]
     [InlineData("  ", typeof(ArgumentException))]
-    public void Validate_WillThrowExceptionWhenPxmlIsNullOrEmpty(string? pxml, Type exceptionType)
+    public void Validate_NullOrEmptyPxml_ThrowsException(string? pxml, Type exceptionType)
     {
         // Arrange
         var sut = new PxmlValidator();
