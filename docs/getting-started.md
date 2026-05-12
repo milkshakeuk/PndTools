@@ -33,30 +33,12 @@ foreach (var path in files)
 }
 ```
 
-## Extract a file
+## Next steps
 
-```csharp
-archive.ExtractFile("/PXML.xml", "/tmp/PXML.xml");
-```
-
-## Extract all files
-
-```csharp
-archive.ExtractAll("/tmp/output");
-```
-
-## Parse PXML metadata
-
-```csharp
-using PndTools;
-using System.Xml.Linq;
-
-archive.ExtractFile("/PXML.xml", "/tmp/PXML.xml");
-
-var xml = XDocument.Load("/tmp/PXML.xml");
-var pxml = PxmlParser.Parse(xml);
-
-Console.WriteLine(pxml.Applications[0].Id);
-```
+- [Extracting files](guides/extracting-files) — extract a single file, a subset, or the entire archive
+- [Reading PXML and icon](guides/pxml-and-icon) — read metadata and the embedded icon directly from the PND stream
+- [Parsing PXML](guides/parsing-pxml) — work with the typed model: applications, titles, categories, and more
+- [Validating PXML](guides/validation) — validate metadata against the schema and business rules
+- [Searching streams](guides/stream-extensions) — search any seekable stream for a byte pattern
 
 [openpandora]: https://openpandora.org
