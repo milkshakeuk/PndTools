@@ -23,6 +23,10 @@ export default defineConfig({
           label: 'Benchmarks',
           items: [{ autogenerate: { directory: 'benchmarks' } }],
         },
+        {
+          label: 'Coverage',
+          items: [{ autogenerate: { directory: 'coverage' } }],
+        },
       ],
     }),
   ],

@@ -272,3 +272,8 @@ docs/api/
 BenchmarkDotNet.Artifacts/
 docs/benchmarks/*.md
 !docs/benchmarks/index.md
+
+# Coverage results and generated report
+coverage/
+docs/coverage/*.md
+!docs/coverage/index.md
