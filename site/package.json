@@ -1,0 +1,19 @@
+{
+  "name": "pndtools-site",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "prebuild": "cp -r ../docs/. src/content/docs/ && node scripts/add-api-frontmatter.mjs",
+    "predev": "cp -r ../docs/. src/content/docs/ && node scripts/add-api-frontmatter.mjs",
+    "build": "astro build",
+    "dev": "astro dev",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.39.2",
+    "astro": "^6.3.1"
+  }
+}
