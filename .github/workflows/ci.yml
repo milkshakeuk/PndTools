@@ -45,7 +45,7 @@ jobs:
           cache: true
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore --locked-mode
 
       - name: Format check
         run: dotnet format --verify-no-changes --no-restore
