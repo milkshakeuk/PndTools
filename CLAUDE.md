@@ -78,6 +78,17 @@ private static ReadOnlySpan<byte> PxmlStart => "<PXML"u8;
 
 Type → SemVer mapping: `feat` = minor, `fix`/`perf` = patch, `feat!`/`BREAKING CHANGE:` footer = major, everything else = no bump. This drives automated versioning and changelog generation.
 
+## npm script conventions
+
+Follow the [ESLint package.json conventions][eslint-pkg-conventions]:
+
+- Script names use only lowercase letters, colons (`:`), hyphens (`-`), and plus signs (`+`)
+- Colons separate parts; hyphens separate words
+- Scripts must start with one of: `build`, `fetch`, `lint`, `fmt`, `start`, `test`, `release`
+- Modifiers are appended with colons in order: `:fix`, `:check`, `:target`, `:options`, `:watch`
+- Scripts must appear in alphabetical order
+- npm lifecycle hooks (`prepare`, `postinstall`) are exempt — they must keep their npm-defined names to run automatically
+
 ## Markdown style
 
 All `.md` files are linted with `markdownlint-cli2` using `.markdownlint.json`. The prek `pre-commit` hook runs it on staged files. To check manually: `npx markdownlint-cli2 "**/*.md"`. Inline links are avoided in favour of reference-style links collected at the bottom of each file.
@@ -89,5 +100,6 @@ All `.md` files are linted with `markdownlint-cli2` using `.markdownlint.json`. 
 - No `PndFileType` / `DetectFileType` naming — renamed to `PndArchiveType` / `DetectArchiveType` to reflect that it describes the archive format, not the file type
 
 [conventional-commits]: https://www.conventionalcommits.org
+[eslint-pkg-conventions]: https://eslint.org/docs/latest/contribute/package-json-conventions
 [ms-test-naming]: https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices#follow-test-naming-standards
 [prek]: https://prek.j178.dev

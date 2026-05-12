@@ -6,11 +6,11 @@
     "node": ">=24"
   },
   "scripts": {
-    "prebuild": "cp -r ../docs/. src/content/docs/ && node scripts/add-api-frontmatter.mjs",
-    "predev": "cp -r ../docs/. src/content/docs/ && node scripts/add-api-frontmatter.mjs",
-    "build": "astro build",
-    "dev": "astro dev",
-    "preview": "astro preview"
+    "build": "npm run build:content && astro build",
+    "build:content": "cp -r ../docs/. src/content/docs/ && node scripts/add-api-frontmatter.mjs && node scripts/add-benchmark-frontmatter.mjs",
+    "build:watch": "npm run build:content && astro dev",
+    "start": "astro dev",
+    "start:preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.39.2",
