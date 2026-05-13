@@ -1,0 +1,23 @@
+{
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD033": false,
+    "MD054": {
+      "autolink": true,
+      "collapsed": true,
+      "full": true,
+      "inline": false,
+      "shortcut": true,
+      "url_inline": false
+    }
+  },
+  "ignores": [
+    ".github/**",
+    "node_modules/**",
+    "site/**",
+    "BenchmarkDotNet.Artifacts/**",
+    "docs/benchmarks/**",
+    "docs/coverage/**"
+  ]
+}
