@@ -114,21 +114,6 @@ public class StreamExtensionsTests
     }
 
     [Fact]
-    public void GetBytes_EntireStream_ReturnsByteArray()
-    {
-        // Arrange
-        var expected = StreamTestHelper.GenerateRandomBytes();
-
-        using Stream stream = new MemoryStream(expected);
-
-        // Act
-        var result = stream.GetBytes();
-
-        // Assert
-        Assert.Equal(expected, result);
-    }
-
-    [Fact]
     public void Find_BackwardSearch_ReturnsLastOccurrence()
     {
         // Arrange

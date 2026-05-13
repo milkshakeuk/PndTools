@@ -126,18 +126,6 @@ public static class StreamExtensions
         return buffer;
     }
 
-    /// <summary>Returns the entire contents of the stream as a byte array.</summary>
-    /// <param name="stream">The stream to read.</param>
-    /// <returns>A byte array containing all bytes in the stream.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
-    public static byte[] GetBytes(this Stream stream)
-    {
-        ArgumentNullException.ThrowIfNull(stream);
-        var buffer = new byte[stream.Length];
-        stream.ReadExactly(buffer);
-        return buffer;
-    }
-
     /// <summary>
     /// Asynchronously returns the bytes between <paramref name="start"/> and <paramref name="end"/> in the stream.
     /// </summary>
