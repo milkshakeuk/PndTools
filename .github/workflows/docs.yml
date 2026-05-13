@@ -35,17 +35,6 @@ jobs:
       - name: Restore .NET tools
         run: dotnet tool restore
 
-      - name: Build
-        run: dotnet build src/PndTools/PndTools.csproj --configuration Release
-
-      - name: Generate API docs
-        run: >
-          dotnet defaultdocumentation
-          --AssemblyFilePath src/PndTools/bin/Release/net10.0/PndTools.dll
-          --DocumentationFilePath src/PndTools/bin/Release/net10.0/PndTools.xml
-          --OutputDirectoryPath docs/api
-          --GeneratedAccessModifiers public,protected
-
       - name: Download coverage artifact
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
