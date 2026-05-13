@@ -12,6 +12,7 @@ A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package 
 - `.editorconfig` based on `dotnet/runtime` — run `dotnet format` to fix violations automatically
 - Node.js devDependencies (`package.json`): `@commitlint/cli`, `@commitlint/config-conventional`, `markdownlint-cli2`, `@j178/prek`
 - [prek][prek] for local git hooks (`prek.toml`) — installed via `npm install` (the `prepare` script runs `prek install` automatically)
+- [APM][apm] for AI assistant skill management (`apm.yml` + `apm.lock.yaml`) — run `apm install` after cloning to deploy skills to `.claude/skills/` and `.agents/skills/`
 
 ## Project structure
 
@@ -21,14 +22,30 @@ src/PndTools/
     Extensions/   — PndStreamExtensions, StreamExtensions
     PndArchive.cs — disposable archive reader (SquashFS + ISO)
   Models/         — Pxml records, PndToolsJsonContext
-  Validation/     — PxmlValidator, ValidationResult, NonSchemaEnforcableValidationExtensions
+  Validation/
+    Extensions/   — NonSchemaEnforcableValidationExtensions
+    PxmlValidator.cs, ValidationResult.cs
   Xml/Extensions/ — XElementExtensions, TypeParsingExtensions
   ArgumentCollectionException.cs
   PxmlParser.cs
 
 test/PndTools.Tests/
+  Helpers/        — StreamTestHelper
   Integration/
+    IO/           — PndArchiveTests, PndStreamExtensionsTests
+    Validation/   — PxmlValidatorTests
+    PxmlParserTests.cs
   Unit/
+    IO/Extentions/ — StreamExtensionsTests
+    Models/        — PndToolsJsonContextTests
+    Xml/Extensions/ — TypeParsingExtensionsTests, XElementExtensionsTests
+    ArgumentCollectionExceptionTests.cs
+
+test/PndTools.Benchmarks/
+  PndArchiveBenchmarks.cs, PndStreamExtensionsBenchmarks.cs, PxmlParserBenchmarks.cs
+
+docs/             — markdown source for the Starlight site (getting-started, guides/, benchmarks/, coverage/)
+site/             — Astro/Starlight project; built and deployed to GitHub Pages via docs.yml
 ```
 
 ## Code conventions
@@ -108,7 +125,11 @@ Follow the [ESLint package.json conventions][eslint-pkg-conventions]:
 
 ## Markdown style
 
-All `.md` files are linted with `markdownlint-cli2` using `.markdownlint.json`. The prek `pre-commit` hook runs it on staged files. To check manually: `npx markdownlint-cli2 "**/*.md"`. Inline links are avoided in favour of reference-style links collected at the bottom of each file.
+All `.md` files are linted with `markdownlint-cli2` using `.markdownlint-cli2.jsonc` (config and ignores combined). The prek `pre-commit` hook runs it on staged files. To check manually: `npm run lint:md`. Inline links are avoided in favour of reference-style links collected at the bottom of each file. MD054 enforces this — only `autolink`, `collapsed`, `full`, and `shortcut` styles are permitted; `inline` and `url_inline` are disabled.
+
+## AI assistant skills
+
+Skills are managed by [APM][apm]. Run `apm install` to deploy them after cloning. To invoke a skill during a session, use `/conventional-commits` — Claude Code loads the skill and applies its guidance for the remainder of that interaction.
 
 ## What we decided NOT to do
 
@@ -116,6 +137,7 @@ All `.md` files are linted with `markdownlint-cli2` using `.markdownlint.json`. 
 - No `PndArchive.Open(string path)` overload — avoids stream ownership complexity; callers manage `File.OpenRead`
 - No `PndFileType` / `DetectFileType` naming — renamed to `PndArchiveType` / `DetectArchiveType` to reflect that it describes the archive format, not the file type
 
+[apm]: https://github.com/microsoft/apm
 [conventional-commits]: https://www.conventionalcommits.org
 [eslint-pkg-conventions]: https://eslint.org/docs/latest/contribute/package-json-conventions
 [ms-test-naming]: https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices#follow-test-naming-standards

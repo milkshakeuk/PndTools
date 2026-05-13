@@ -2,7 +2,7 @@
 
 ## Getting started
 
-You will need the [.NET 10 SDK][dotnet] and [Node.js][nodejs] 24 LTS (for commit hooks). If you use [fnm][fnm] to manage Node versions:
+You will need the [.NET 10 SDK][dotnet], [Node.js][nodejs] 24 LTS (for commit hooks), and [APM][apm] (for AI assistant skills). If you use [fnm][fnm] to manage Node versions:
 
 ```bash
 fnm use --install-if-missing
