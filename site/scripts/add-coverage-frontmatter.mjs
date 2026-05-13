@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const coverageDir = join(import.meta.dirname, '../src/content/docs/coverage');
+const coverageDir = join(import.meta.dirname, '../../docs/coverage');
 
 const files = await readdir(coverageDir);
 

@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
-const benchmarksDir = join(import.meta.dirname, '../src/content/docs/benchmarks');
+const benchmarksDir = join(import.meta.dirname, '../../docs/benchmarks');
 
 const files = await readdir(benchmarksDir);
 
