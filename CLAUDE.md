@@ -78,6 +78,23 @@ private static ReadOnlySpan<byte> PxmlStart => "<PXML"u8;
 
 Type → SemVer mapping: `feat` = minor, `fix`/`perf` = patch, `feat!`/`BREAKING CHANGE:` footer = major, everything else = no bump. This drives automated versioning and changelog generation.
 
+Type usage rules — only `feat`, `fix`, and `perf` affect semver, so apply them only to changes that NuGet consumers would notice:
+
+- `feat` — new public API or behaviour a library consumer gains
+- `fix` — corrects wrong behaviour in the library (not docs or tooling)
+- `perf` — measurable performance improvement to library code itself
+- `feat!` / `BREAKING CHANGE:` footer — removes or changes existing public API
+- `docs` — changes to `.md` files, XML doc comments, or the docs site content
+- `chore` — project tooling, config, conventions, or scripts with no runtime effect
+- `ci` — changes to GitHub Actions workflows or hook configuration
+- `build` — changes to build system files (`.csproj`, `Directory.Build.props`, `package.json` structure)
+- `test` — adding or updating tests or benchmarks
+- `refactor` — internal restructuring with no public API change
+
+When in doubt: if a NuGet consumer's code would not compile or behave differently, use `feat`/`fix`/`perf`; if only contributors are affected, use one of the no-bump types.
+
+Commit message bodies use imperative-mood prose paragraphs, not bullet lists. Group related changes into separate paragraphs separated by a blank line. Changelog tooling ignores the body entirely (it reads only the subject line and `BREAKING CHANGE:` footer), so the body is for human readers in `git log`.
+
 ## npm script conventions
 
 Follow the [ESLint package.json conventions][eslint-pkg-conventions]:
