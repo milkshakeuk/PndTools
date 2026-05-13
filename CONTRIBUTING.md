@@ -13,9 +13,12 @@ Then set up the project:
 ```bash
 dotnet restore
 npm install
+apm install
 ```
 
 `npm install` installs commitlint, markdownlint-cli2, and [prek][prek] — a lightweight Rust-based git hook manager. The `prepare` script then runs `prek install` automatically, wiring up a `pre-commit` hook that lints staged markdown files and a `commit-msg` hook that validates commit messages against the [Conventional Commits][conventional-commits] spec. Both run locally before anything reaches CI.
+
+`apm install` reads `apm.lock.yaml` and deploys AI assistant skills to `.claude/skills/` (Claude Code) and `.agents/skills/` (GitHub Copilot). [APM][apm] must be installed first — `brew install microsoft/apm/apm` — but no marketplace registration is needed; the lock file pins the exact source.
 
 ## Code style
 
@@ -104,6 +107,7 @@ If you need to apply it manually:
 git config commit.template .gitmessage
 ```
 
+[apm]: https://github.com/microsoft/apm
 [claude-md]: CLAUDE.md
 [conventional-commits]: https://www.conventionalcommits.org
 [dotnet]: https://dotnet.microsoft.com/download

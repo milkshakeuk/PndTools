@@ -1,0 +1,16 @@
+lockfile_version: '1'
+generated_at: '2026-05-13T15:00:37.908147+00:00'
+apm_version: 0.13.0
+dependencies:
+- repo_url: dgalarza/claude-code-workflows
+  host: github.com
+  resolved_commit: e4b8a682ca721d7c308f3151732a3f14caf03246
+  virtual_path: plugins/conventional-commits
+  is_virtual: true
+  package_type: marketplace_plugin
+  deployed_files:
+  - .agents/skills/conventional-commits
+  - .claude/skills/conventional-commits
+  content_hash: sha256:1c939d2e1e95f8ea7de64155adfa0127792565ad0be4003f1f1592c16990e81f
+  discovered_via: dgalarza-workflows
+  marketplace_plugin_name: conventional-commits

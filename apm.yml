@@ -1,0 +1,13 @@
+name: PndTools
+version: 1.0.0
+description: APM project for PndTools
+author: Jake Aitchison
+targets:
+  - claude
+  - copilot
+dependencies:
+  apm:
+    - dgalarza/claude-code-workflows/plugins/conventional-commits
+  mcp: []
+includes: auto
+scripts: {}
