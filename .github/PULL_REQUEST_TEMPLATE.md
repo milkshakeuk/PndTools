@@ -23,5 +23,3 @@
 - [ ] `dotnet format --verify-no-changes` passes
 - [ ] `npx markdownlint-cli2 "**/*.md"` passes (if any `.md` files changed)
 - [ ] XML docs updated for any changed public API
-
-[contributing]: ../CONTRIBUTING.md

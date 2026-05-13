@@ -1,6 +1,6 @@
 # PndTools
 
-A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package files. Originally a port of the PHP library [PndAid](https://github.com/milkshakeuk/PndAid).
+A .NET 10 library for parsing, validating, and inspecting PND (Pandora) package files. Originally a port of the PHP library <https://github.com/milkshakeuk/PndAid>.
 
 ## Stack
 
@@ -84,7 +84,7 @@ Follow the [ESLint package.json conventions][eslint-pkg-conventions]:
 
 - Script names use only lowercase letters, colons (`:`), hyphens (`-`), and plus signs (`+`)
 - Colons separate parts; hyphens separate words
-- Scripts must start with one of: `build`, `fetch`, `lint`, `fmt`, `start`, `test`, `release`
+- Scripts must start with one of: `build`, `fetch`, `lint`, `fmt`, `start`, `test`, `release` — no other prefixes are permitted, including `clean`, `dev`, `check`, or similar
 - Modifiers are appended with colons in order: `:fix`, `:check`, `:target`, `:options`, `:watch`
 - Scripts must appear in alphabetical order
 - npm lifecycle hooks (`prepare`, `postinstall`) are exempt — they must keep their npm-defined names to run automatically
