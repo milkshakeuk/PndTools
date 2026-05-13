@@ -43,3 +43,9 @@ var data = stream.GetBytes(start: offset, end: offset + 512);
 ```
 
 Both positions are zero-based. `start` is inclusive, `end` is exclusive. Throws `ArgumentOutOfRangeException` if `end` exceeds the stream length or `start` is negative.
+
+## Async variants
+
+`FindAsync` and `GetBytesAsync` are async counterparts that accept an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples.
+
+[async-io]: ../async-io

@@ -82,3 +82,9 @@ foreach (var path in extracted)
     Console.WriteLine(path);
 }
 ```
+
+## Async variants
+
+Every extraction method has an async counterpart — `ExtractFileAsync`, `ExtractFilesAsync`, `ExtractAllAsync`, and `ExtractPreviewPicsAsync` — each accepting an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples and guidance on when to prefer the async API.
+
+[async-io]: ../async-io

@@ -30,7 +30,8 @@ using PndTools.IO.Extensions;
 using System.Xml.Linq;
 
 using var stream = File.OpenRead("game.pnd");
-var pxml = PxmlParser.Parse(XDocument.Parse(stream.GetPxml()));
+var xmlString = stream.GetPxml();
+var pxml = PxmlParser.Parse(XDocument.Parse(xmlString));
 
 Console.WriteLine(pxml.Applications[0].Id);
 ```
@@ -79,4 +80,9 @@ Console.WriteLine(archiveType); // SquashFs or Iso
 
 Returns `PndArchiveType.Unknown` if the stream is too short or does not match either format.
 
+## Async variants
+
+Every method on `PndStreamExtensions` has an async counterpart — `GetPxmlAsync`, `GetIconAsync`, `SavePxmlAsync`, `SaveIconAsync`, and `DetectArchiveTypeAsync` — each accepting an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples and guidance on when to prefer the async API.
+
+[async-io]: ../async-io
 [pxml-spec]: https://pandorawiki.org/PXML_specification
