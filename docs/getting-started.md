@@ -35,10 +35,11 @@ foreach (var path in files)
 
 ## Next steps
 
-- [Extracting files](guides/extracting-files) — extract a single file, a subset, or the entire archive
-- [Reading PXML and icon](guides/pxml-and-icon) — read metadata and the embedded icon directly from the PND stream
-- [Parsing PXML](guides/parsing-pxml) — work with the typed model: applications, titles, categories, and more
-- [Validating PXML](guides/validation) — validate metadata against the schema and business rules
-- [Searching streams](guides/stream-extensions) — search any seekable stream for a byte pattern
+- [Extracting files](/guides/extracting-files) — extract a single file, a subset, or the entire archive
+- [Reading PXML and icon](/guides/pxml-and-icon) — read metadata and the embedded icon directly from the PND stream
+- [Parsing PXML](/guides/parsing-pxml) — work with the typed model: applications, titles, categories, and more
+- [Validating PXML](/guides/validation) — validate metadata against the schema and business rules
+- [Searching streams](/guides/stream-extensions) — search any seekable stream for a byte pattern
+- [Async IO](/guides/async-io) — use the async API in ASP.NET Core, background services, and other async contexts
 
 [openpandora]: https://openpandora.org

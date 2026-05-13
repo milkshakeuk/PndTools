@@ -48,4 +48,4 @@ Both positions are zero-based. `start` is inclusive, `end` is exclusive. Throws 
 
 `FindAsync` and `GetBytesAsync` are async counterparts that accept an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples.
 
-[async-io]: ../async-io
+[async-io]: /guides/async-io

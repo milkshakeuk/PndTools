@@ -84,5 +84,5 @@ Returns `PndArchiveType.Unknown` if the stream is too short or does not match ei
 
 Every method on `PndStreamExtensions` has an async counterpart — `GetPxmlAsync`, `GetIconAsync`, `SavePxmlAsync`, `SaveIconAsync`, and `DetectArchiveTypeAsync` — each accepting an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples and guidance on when to prefer the async API.
 
-[async-io]: ../async-io
+[async-io]: /guides/async-io
 [pxml-spec]: https://pandorawiki.org/PXML_specification

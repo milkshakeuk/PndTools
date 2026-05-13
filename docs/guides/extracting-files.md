@@ -87,4 +87,4 @@ foreach (var path in extracted)
 
 Every extraction method has an async counterpart — `ExtractFileAsync`, `ExtractFilesAsync`, `ExtractAllAsync`, and `ExtractPreviewPicsAsync` — each accepting an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples and guidance on when to prefer the async API.
 
-[async-io]: ../async-io
+[async-io]: /guides/async-io
