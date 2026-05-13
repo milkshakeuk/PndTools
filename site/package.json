@@ -7,7 +7,8 @@
   },
   "scripts": {
     "build": "npm run build:content && astro build",
-    "build:content": "cp -r ../docs/. src/content/docs/ && node scripts/add-api-frontmatter.mjs && node scripts/add-benchmark-frontmatter.mjs && node scripts/add-coverage-frontmatter.mjs",
+    "build:clean": "rm -rf .astro dist ../BenchmarkDotNet.Artifacts ../docs/benchmarks/*-report-github.md ../docs/coverage/SummaryGithub.md",
+    "build:content": "node scripts/add-benchmark-frontmatter.mjs && node scripts/add-coverage-frontmatter.mjs",
     "build:watch": "npm run build:content && astro dev",
     "start": "astro dev",
     "start:preview": "astro preview"
