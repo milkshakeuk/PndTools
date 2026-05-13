@@ -1,6 +1,9 @@
 ---
 title: Reading PXML and icon
 description: Read PXML metadata and the embedded icon directly from a PND stream without mounting the archive.
+sidebar:
+  order: 2
+editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/pxml-and-icon.md'
 ---
 
 A PND file is a SquashFS or ISO image with PXML metadata and a PNG icon appended directly to the end of the file. Launchers and menus rely on this appended PXML to discover and display applications without mounting the archive. See the [PXML specification][pxml-spec] for the full format reference. The `PndStreamExtensions` methods read PXML and icon directly from the raw stream, so you do not need to open the archive filesystem at all. This is faster when you only need metadata or the icon.
@@ -27,11 +30,10 @@ Combine `GetPxml` with `PxmlParser` to get strongly-typed metadata without writi
 ```csharp
 using PndTools;
 using PndTools.IO.Extensions;
-using System.Xml.Linq;
 
 using var stream = File.OpenRead("game.pnd");
 var xmlString = stream.GetPxml();
-var pxml = PxmlParser.Parse(XDocument.Parse(xmlString));
+var pxml = PxmlParser.Parse(xmlString);
 
 Console.WriteLine(pxml.Applications[0].Id);
 ```
@@ -53,7 +55,7 @@ stream.SavePxml("/tmp/PXML.xml");
 using var stream = File.OpenRead("game.pnd");
 var png = stream.GetIcon();
 
-await File.WriteAllBytesAsync("/tmp/icon.png", png);
+File.WriteAllBytes("/tmp/icon.png", png);
 ```
 
 Throws `InvalidPndException` if the stream does not contain an embedded icon.
@@ -82,7 +84,7 @@ Returns `PndArchiveType.Unknown` if the stream is too short or does not match ei
 
 ## Async variants
 
-Every method on `PndStreamExtensions` has an async counterpart — `GetPxmlAsync`, `GetIconAsync`, `SavePxmlAsync`, `SaveIconAsync`, and `DetectArchiveTypeAsync` — each accepting an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples and guidance on when to prefer the async API.
+Every method on `PndStreamExtensions` has an async counterpart — `GetPxmlAsync`, `GetIconAsync`, `SavePxmlAsync`, `SaveIconAsync`, and `DetectArchiveTypeAsync` — each accepting an optional `CancellationToken`. See the [async and await guide][async-io] for usage examples and guidance on when to prefer the async API.
 
 [async-io]: /guides/async-io
 [pxml-spec]: https://pandorawiki.org/PXML_specification

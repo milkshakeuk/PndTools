@@ -1,6 +1,9 @@
 ---
 title: Searching streams
 description: Use StreamExtensions to search any seekable stream for a byte sequence or UTF-8 string.
+sidebar:
+  order: 5
+editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/stream-extensions.md'
 ---
 
 `StreamExtensions` provides general-purpose stream search methods that PndTools uses internally to locate PXML and magic bytes. They are public and available for use in your own code whenever you need to search a seekable stream for a known byte pattern.
@@ -28,9 +31,13 @@ var offset = stream.Find("<PXML");
 
 ## Search direction
 
-Both overloads accept an optional `Direction` parameter. `Direction.Backwards` starts from the end of the stream and returns the last match — useful when the content you need is appended to the end of a larger file.
+Both overloads accept an optional `Direction` parameter. `Direction.Forward` (the default) scans from the current position toward the end. `Direction.Backwards` starts from the end of the stream and returns the last match — useful when the content you need is appended to the end of a larger file, as with PXML in a PND.
 
 ```csharp
+// Forward (default) — first match from the start
+var offset = stream.Find("<PXML", Direction.Forward);
+
+// Backwards — last match from the end
 var offset = stream.Find("</PXML>", Direction.Backwards);
 ```
 
@@ -46,6 +53,6 @@ Both positions are zero-based. `start` is inclusive, `end` is exclusive. Throws 
 
 ## Async variants
 
-`FindAsync` and `GetBytesAsync` are async counterparts that accept an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples.
+`FindAsync` and `GetBytesAsync` are async counterparts that accept an optional `CancellationToken`. See the [async and await guide][async-io] for usage examples.
 
 [async-io]: /guides/async-io

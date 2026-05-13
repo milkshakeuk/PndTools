@@ -1,6 +1,9 @@
 ---
-title: Async IO
+title: Using async and await
 description: Use the async API for non-blocking IO in ASP.NET Core, background services, and other async contexts.
+sidebar:
+  order: 6
+editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/async-io.md'
 ---
 
 Every IO method in PndTools has an async counterpart. All async methods accept an optional `CancellationToken` so you can honour request cancellation or timeouts.
@@ -12,17 +15,14 @@ Prefer the async API in ASP.NET Core controllers, minimal API handlers, Blazor c
 ```csharp
 using PndTools;
 using PndTools.IO.Extensions;
-using System.Xml.Linq;
 
 using var stream = File.OpenRead("game.pnd");
 
 var xmlString = await stream.GetPxmlAsync(cancellationToken: cancellationToken);
-var pxml = PxmlParser.Parse(XDocument.Parse(xmlString));
+var pxml = PxmlParser.Parse(xmlString);
 
 Console.WriteLine(pxml.Applications[0].Id);
 ```
-
-The direction parameter defaults to `Direction.Backwards`, which is correct for PXML — it is appended to the end of the archive.
 
 ```csharp
 var png = await stream.GetIconAsync(cancellationToken: cancellationToken);
@@ -67,8 +67,11 @@ await archive.ExtractFilesAsync(images, "/tmp/output", cancellationToken);
 `ExtractPreviewPicsAsync` extracts images referenced in the PXML, returning the list of paths that were actually written:
 
 ```csharp
+using var stream = File.OpenRead("game.pnd");
+using var archive = PndArchive.Open(stream);
+
 var xmlString = await stream.GetPxmlAsync(cancellationToken: cancellationToken);
-var pxml = PxmlParser.Parse(XDocument.Parse(xmlString));
+var pxml = PxmlParser.Parse(xmlString);
 
 var extracted = await archive.ExtractPreviewPicsAsync(pxml, "/tmp/previews", cancellationToken);
 
@@ -91,7 +94,17 @@ var offset = await stream.FindAsync("<PXML", cancellationToken: cancellationToke
 var data = await stream.GetBytesAsync(offset, offset + 512, cancellationToken);
 ```
 
-`FindAsync` also accepts `ReadOnlyMemory<byte>` for raw byte patterns and supports `Direction.Backwards`.
+`FindAsync` accepts the same `Direction` parameter as the [synchronous][stream-extensions-direction] version:
+
+```csharp
+// Forward (default) — first match from the start
+var offset = await stream.FindAsync("<PXML", Direction.Forward, cancellationToken);
+
+// Backwards — last match from the end
+var offset = await stream.FindAsync("</PXML>", Direction.Backwards, cancellationToken);
+```
+
+`FindAsync` also accepts `ReadOnlyMemory<byte>` for raw byte patterns.
 
 ## Passing a CancellationToken in ASP.NET Core
 
@@ -105,3 +118,5 @@ app.MapGet("/pxml", async (IFormFile file, CancellationToken cancellationToken) 
     return Results.Text(xmlString, "application/xml");
 });
 ```
+
+[stream-extensions-direction]: /guides/stream-extensions#search-direction

@@ -1,6 +1,9 @@
 ---
 title: Parsing PXML
 description: Parse PXML metadata into typed .NET objects and work with applications, titles, categories, and more.
+sidebar:
+  order: 3
+editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/parsing-pxml.md'
 ---
 
 `PxmlParser.Parse` converts a PXML document into a `Pxml` record containing strongly-typed .NET objects. You can obtain the XML string from a PND stream using `GetPxml`, or load it from a file. The [PXML specification][pxml-spec] documents the full XML format.
@@ -10,16 +13,17 @@ description: Parse PXML metadata into typed .NET objects and work with applicati
 ```csharp
 using PndTools;
 using PndTools.IO.Extensions;
-using System.Xml.Linq;
 
 using var stream = File.OpenRead("game.pnd");
-var pxml = PxmlParser.Parse(XDocument.Parse(stream.GetPxml()));
+var xmlString = stream.GetPxml();
+var pxml = PxmlParser.Parse(xmlString);
 ```
 
 ## Parse from a file
 
 ```csharp
-var pxml = PxmlParser.Parse(XDocument.Load("/tmp/PXML.xml"));
+var xmlString = File.ReadAllText("/tmp/PXML.xml");
+var pxml = PxmlParser.Parse(xmlString);
 ```
 
 ## The Pxml model
@@ -97,7 +101,7 @@ foreach (var licence in app.Licenses)
 
 ## Preview images
 
-`PreviewPics` holds paths to images within the archive. Use `ExtractPreviewPics` on a `PndArchive` to extract them — see [Extracting files](extracting-files).
+`PreviewPics` holds paths to images within the archive. Use `ExtractPreviewPics` on a `PndArchive` to extract them — see [Extracting files][extracting-files].
 
 ```csharp
 foreach (var pic in app.PreviewPics)
@@ -106,5 +110,6 @@ foreach (var pic in app.PreviewPics)
 }
 ```
 
+[extracting-files]: /guides/extracting-files
 [freedesktop]: https://specifications.freedesktop.org/menu-spec/latest/
 [pxml-spec]: https://pandorawiki.org/PXML_specification

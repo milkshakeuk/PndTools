@@ -3,7 +3,7 @@ title: Benchmarks
 description: BenchmarkDotNet results for PndTools.
 ---
 
-Benchmark results are generated automatically by [BenchmarkDotNet](https://benchmarkdotnet.org) as part of the CI build and published here on each release.
+Benchmark results are generated automatically by <https://benchmarkdotnet.org> as part of the CI build and published here on each release.
 
 To run benchmarks locally:
 

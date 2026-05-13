@@ -3,8 +3,8 @@ title: Coverage
 description: Code coverage results for PndTools.
 ---
 
-Coverage results are generated automatically by [coverlet](https://github.com/coverlet-coverage/coverlet)
-and [ReportGenerator](https://reportgenerator.io) as part of the CI build and published here on each push to master.
+Coverage results are generated automatically by <https://github.com/coverlet-coverage/coverlet>
+and <https://reportgenerator.io> as part of the CI build and published here on each push to master.
 
 To run tests with coverage locally:
 

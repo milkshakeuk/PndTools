@@ -1,6 +1,9 @@
 ---
 title: Extracting files
 description: Extract a single file, a named subset, or the entire contents of a PND archive.
+sidebar:
+  order: 1
+editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/extracting-files.md'
 ---
 
 All extraction methods preserve the internal directory structure of the archive under the output path. The output directory is created automatically if it does not exist.
@@ -43,37 +46,19 @@ Use `ExtractAll` to extract the entire archive contents.
 archive.ExtractAll("/tmp/output");
 ```
 
-## Extract PXML and parse metadata
+## Extract preview images
 
-A common pattern is to extract PXML to a temporary file and parse it immediately.
+`ExtractPreviewPics` extracts all preview images referenced in the PXML, skipping any paths that do not exist in the archive. The PXML is read directly from the end of the PND stream — no need to extract it first.
 
 ```csharp
 using PndTools;
-using System.Xml.Linq;
+using PndTools.IO.Extensions;
 
-var temp = Path.GetTempFileName();
+using var stream = File.OpenRead("game.pnd");
+using var archive = PndArchive.Open(stream);
 
-try
-{
-    archive.ExtractFile("/PXML.xml", temp);
-
-    var xml = XDocument.Load(temp);
-    var pxml = PxmlParser.Parse(xml);
-
-    Console.WriteLine(pxml.Applications[0].Id);
-}
-finally
-{
-    File.Delete(temp);
-}
-```
-
-## Extract preview images
-
-`ExtractPreviewPics` extracts all preview images referenced in the PXML, skipping any paths that do not exist in the archive.
-
-```csharp
-var pxml = PxmlParser.Parse(XDocument.Load(temp));
+var xmlString = stream.GetPxml();
+var pxml = PxmlParser.Parse(xmlString);
 
 var extracted = archive.ExtractPreviewPics(pxml, "/tmp/previews");
 
@@ -85,6 +70,6 @@ foreach (var path in extracted)
 
 ## Async variants
 
-Every extraction method has an async counterpart — `ExtractFileAsync`, `ExtractFilesAsync`, `ExtractAllAsync`, and `ExtractPreviewPicsAsync` — each accepting an optional `CancellationToken`. See the [async IO guide][async-io] for usage examples and guidance on when to prefer the async API.
+Every extraction method has an async counterpart — `ExtractFileAsync`, `ExtractFilesAsync`, `ExtractAllAsync`, and `ExtractPreviewPicsAsync` — each accepting an optional `CancellationToken`. See the [async and await guide][async-io] for usage examples and guidance on when to prefer the async API.
 
 [async-io]: /guides/async-io
