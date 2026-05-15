@@ -125,8 +125,8 @@ Type usage rules — only `feat`, `fix`, and `perf` affect semver, so apply them
 - `fix` — corrects wrong behaviour in the library (not docs or tooling)
 - `perf` — measurable performance improvement to library code itself
 - `feat!` / `BREAKING CHANGE:` footer — removes or changes existing public API
-- `docs` — changes to `.md` files, XML doc comments, or the docs site content
-- `chore` — project tooling, config, conventions, or scripts with no runtime effect
+- `docs` — user-facing documentation: README, CONTRIBUTING.md, SECURITY.md, XML doc comments, or the docs site; not AI/contributor config files
+- `chore` — project tooling, config, conventions, or scripts with no runtime effect; includes AI and contributor config files such as CLAUDE.md, AGENTS.md, `.specify/`, and `apm.yml`
 - `ci` — changes to GitHub Actions workflows or hook configuration
 - `build` — changes to build system files (`.csproj`, `Directory.Build.props`, `package.json` structure)
 - `test` — adding or updating tests or benchmarks
