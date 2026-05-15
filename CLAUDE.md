@@ -75,11 +75,35 @@ ArgumentException.ThrowIfNullOrWhiteSpace(value);              // framework
 private static ReadOnlySpan<byte> PxmlStart => "<PXML"u8;
 ```
 
+For async methods, use `ReadOnlyMemory<byte>` instead — spans cannot cross `await` boundaries:
+
+```csharp
+private static ReadOnlyMemory<byte> PxmlStartMemory => "<PXML"u8.ToArray();
+```
+
 **Stream search** uses 4096-byte chunked traversal with `pattern.Length - 1` overlap between chunks to handle boundary-spanning matches. `ReadExactly` not `Read`.
 
 **Archive access** via `PndArchive` — disposable, created with `PndArchive.Open(stream)`. Holds a `DiscFileSystem` open for the lifetime of the instance. `ArchiveType` property exposes the detected `PndArchiveType` (SquashFs / Iso).
 
+**Always read the relevant source files before planning.** Check what public methods, patterns, and types already exist in the actual code — do not assume the API surface from memory or documentation.
+
+**Async conventions**: async methods use the `Async` suffix and accept `CancellationToken cancellationToken = default` as the last parameter.
+
+**Exception types**: custom exceptions use short names — `PndParseException` (not `PndParsingException`), `PndArchiveException`, `PndValidationException`, with `PndException` as the base. `ArgumentCollectionException` already exists and must remain unchanged.
+
+**Benchmarks**: for performance-sensitive features, add or update a class in `test/PndTools.Benchmarks/` using `[MemoryDiagnoser]` + `[MarkdownExporterAttribute.GitHub]`.
+
 **JSON serialisation** uses `PndToolsJsonContext` (AOT-safe source generation, camelCase).
+
+## Verification
+
+After any code change, run:
+
+```bash
+dotnet build    # zero warnings required
+dotnet test     # all tests must pass
+dotnet format   # fixes style and licence-header violations
+```
 
 ## Test conventions
 
@@ -142,3 +166,8 @@ Skills are managed by [APM][apm]. Run `apm install` to deploy them after cloning
 [eslint-pkg-conventions]: https://eslint.org/docs/latest/contribute/package-json-conventions
 [ms-test-naming]: https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices#follow-test-naming-standards
 [prek]: https://prek.j178.dev
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
