@@ -283,3 +283,6 @@ docs/coverage/*.md
 apm_modules/
 .agents/
 .claude/skills/
+
+# Language server caches
+*.lscache
