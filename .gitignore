@@ -286,3 +286,6 @@ apm_modules/
 
 # Language server caches
 *.lscache
+
+# spec-kit
+.specify/integrations/.cache/

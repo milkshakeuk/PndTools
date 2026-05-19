@@ -19,6 +19,9 @@
     "site/**",
     "BenchmarkDotNet.Artifacts/**",
     "docs/benchmarks/**",
-    "docs/coverage/**"
+    "docs/coverage/**",
+    "apm_modules/**",
+    ".claude/skills/**",
+    ".agents/skills/**"
   ]
 }

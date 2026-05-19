@@ -170,4 +170,7 @@ Skills are managed by [APM][apm]. Run `apm install` to deploy them after cloning
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
+at [specs/001-github-pr-merge/plan.md][plan]
 <!-- SPECKIT END -->
+
+[plan]: specs/001-github-pr-merge/plan.md
