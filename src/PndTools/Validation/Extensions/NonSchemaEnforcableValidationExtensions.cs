@@ -56,19 +56,19 @@ public static class NonSchemaEnforcableValidationExtensions
         foreach (var category in elements)
         {
             var key = category.Attribute<string>("name");
-            if (key is null || !CategoryMatrix.ContainsKey(key))
+            if (key is null || !_categoryMatrix.ContainsKey(key))
             {
                 continue;
             }
 
             var subcategories = category.XElements("subcategory");
-            var spare = CategoryMatrix["spare"];
+            var spare = _categoryMatrix["spare"];
 
             var invalid = subcategories.Where(s =>
             {
                 var name = s.Attribute<string>("name");
                 return name is not null
-                    && !CategoryMatrix[key].Contains(name)
+                    && !_categoryMatrix[key].Contains(name)
                     && !spare.Contains(name);
             });
 
@@ -78,7 +78,7 @@ public static class NonSchemaEnforcableValidationExtensions
     }
 
 #pragma warning disable CA1859 // IReadOnlyDictionary signals immutability intent on this field
-    private static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> CategoryMatrix =
+    private static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> _categoryMatrix =
         new Dictionary<string, IReadOnlySet<string>>
 #pragma warning restore CA1859
         {
