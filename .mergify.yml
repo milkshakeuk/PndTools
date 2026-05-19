@@ -1,28 +1,10 @@
-# Contract: .mergify.yml
-#
-# This file documents the intended Mergify configuration structure.
-# It is a reference contract, not the deployed file.
-# The deployed file lives at the repository root: /.mergify.yml
-#
-# Ecosystem labels applied by Dependabot:
-#   - "nuget"          (declared via labels: in .github/dependabot.yml — NOT added by default)
-#   - "npm"
-#   - "github-actions"
-# These labels MUST be declared in .github/dependabot.yml or the ecosystem queue routing will never fire.
-#
-# The batch_size value below is a recommended default.
-# It MUST be adjusted to match the open-pull-requests-limit in .github/dependabot.yml.
-#
-# max_checks_retries: controls how many times Mergify retries a failing CI check before
-# dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
-
 queue_rules:
 
   # Standard PRs and Dependabot major-version PRs.
   # No batching — each PR merges individually once conditions are met.
   - name: standard
     merge_method: fast-forward
-    max_checks_retries: 3            # configurable; FR-011b circuit breaker
+    max_checks_retries: 3
     merge_conditions:
       - base = main
       - "#approved-reviews-by >= 1"
@@ -34,9 +16,9 @@ queue_rules:
   # Dependabot minor/patch — NuGet ecosystem.
   - name: nuget-deps
     merge_method: fast-forward
-    batch_size: 10                   # configurable; keep <= dependabot open-pull-requests-limit
+    batch_size: 10
     batch_max_wait_time: 30 min
-    max_checks_retries: 3            # configurable; FR-011b circuit breaker
+    max_checks_retries: 3
     merge_conditions:
       - base = main
       - check-success = lint
@@ -84,9 +66,8 @@ pull_request_rules:
         name: standard
 
   # Dependabot major-version PRs — same gate as standard PRs.
-  # IMPORTANT: major rules MUST appear before minor/patch rules so that a PR carrying
-  # both semver-major and semver-minor labels (grouped update) is correctly treated as
-  # major. Mergify evaluates pull_request_rules in order and applies the first match.
+  # IMPORTANT: major rule MUST appear before minor/patch rules so that a PR carrying
+  # both semver-major and semver-minor labels is correctly treated as major (FR-006).
   - name: merge dependabot major updates
     conditions:
       - base = main
@@ -101,8 +82,25 @@ pull_request_rules:
       queue:
         name: standard
 
+  # Dependabot PRs with no semver label — catch-all, treat as major per FR-006.
+  # Appears after major rule and before minor/patch rules.
+  - name: merge dependabot unlabelled (treat as major)
+    conditions:
+      - base = main
+      - author = dependabot[bot]
+      - -label = version-update:semver-major
+      - -label = version-update:semver-minor
+      - -label = version-update:semver-patch
+      - "#approved-reviews-by >= 1"
+      - "#changes-requested-reviews-by = 0"
+      - check-success = lint
+      - check-success = dependency-review
+      - check-success = build
+    actions:
+      queue:
+        name: standard
+
   # Dependabot minor/patch — NuGet. Auto-enqueue; no approval required.
-  # Only reached if no semver-major label is present (major rule above takes precedence).
   - name: auto-merge dependabot nuget minor/patch
     conditions:
       - base = main
@@ -143,24 +141,6 @@ pull_request_rules:
     actions:
       queue:
         name: actions-deps
-
-  # Dependabot PRs with no semver label — catch-all, treat as major per FR-006; require codeowner approval.
-  # MUST appear after the major rule and before any minor/patch rules.
-  - name: merge dependabot unlabelled (treat as major)
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - -label = version-update:semver-major
-      - -label = version-update:semver-minor
-      - -label = version-update:semver-patch
-      - "#approved-reviews-by >= 1"
-      - "#changes-requested-reviews-by = 0"
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-    actions:
-      queue:
-        name: standard
 
   # Failure notification — post a comment when a PR is dequeued for any terminal reason.
   - name: notify on merge failure
