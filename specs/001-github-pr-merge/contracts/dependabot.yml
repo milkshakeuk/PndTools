@@ -1,0 +1,39 @@
+# Contract: .github/dependabot.yml
+#
+# This file documents the intended Dependabot configuration.
+# It is a reference contract, not the deployed file.
+# The deployed file lives at: /.github/dependabot.yml
+#
+# open-pull-requests-limit MUST be kept <= batch_size in .mergify.yml
+# to avoid Dependabot opening more PRs than a single batch can absorb.
+
+version: 2
+
+updates:
+
+  # NuGet (.NET) dependencies
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10     # keep <= nuget-deps batch_size in .mergify.yml
+    labels:
+      - nuget                        # required for Mergify nuget-deps queue routing
+
+  # npm (Node.js devDependencies)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10     # keep <= npm-deps batch_size in .mergify.yml
+    labels:
+      - npm                          # required for Mergify npm-deps queue routing
+
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10     # keep <= actions-deps batch_size in .mergify.yml
+    labels:
+      - github-actions               # required for Mergify actions-deps queue routing
