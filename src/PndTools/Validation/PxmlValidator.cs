@@ -16,8 +16,8 @@ public class PxmlValidator
 {
     private const string SchemaNamespace = "http://openpandora.org/namespaces/PXML";
     private const string SchemaResourceName = "PndTools.Resource.schema.xsd";
-    private static readonly string NamespaceInClause = $" in namespace '{SchemaNamespace}'";
-    private static readonly string NamespacePrefix = $"{SchemaNamespace}:";
+    private static readonly string _namespaceInClause = $" in namespace '{SchemaNamespace}'";
+    private static readonly string _namespacePrefix = $"{SchemaNamespace}:";
 
     private readonly XmlSchemaSet _schemaSet = LoadSchemaSet();
 
@@ -99,6 +99,6 @@ public class PxmlValidator
     }
 
     private static string WithoutNamespace(string input) =>
-        input.Replace(NamespaceInClause, string.Empty)
-             .Replace(NamespacePrefix, string.Empty);
+        input.Replace(_namespaceInClause, string.Empty)
+             .Replace(_namespacePrefix, string.Empty);
 }
