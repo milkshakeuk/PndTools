@@ -100,9 +100,9 @@ private static ReadOnlyMemory<byte> PxmlStartMemory => "<PXML"u8.ToArray();
 After any code change, run:
 
 ```bash
+dotnet format   # fixes style and licence-header violations; must run before build
 dotnet build    # zero warnings required
 dotnet test     # all tests must pass
-dotnet format   # fixes style and licence-header violations
 ```
 
 ## Test conventions
