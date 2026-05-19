@@ -49,6 +49,8 @@ Add further checks here as new workflows are introduced. The strict mode setting
 | Required approving review count | 1 |
 | Require code owner review | enabled |
 | Dismiss stale reviews on push | enabled |
+| Require last push approval | enabled |
+| Required review thread resolution | enabled |
 
 **Enforces**: FR-002
 

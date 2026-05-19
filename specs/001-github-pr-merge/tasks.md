@@ -32,8 +32,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Configure Ruleset 1 (Commit Integrity) on `main` via Settings → Rules → Rulesets — enable **Require signed commits** and **Require linear history**; set no bypass actors
-- [ ] T005 Configure Ruleset 2 (CI Quality Gates) on `main` — enable **Required status checks** in strict mode; add the check names captured in T003; set no bypass actors
+- [X] T004 Configure Ruleset 1 (Commit Integrity) on `main` via Settings → Rules → Rulesets — enable **Require signed commits** and **Require linear history**; set no bypass actors
+- [X] T005 Configure Ruleset 2 (CI Quality Gates) on `main` — enable **Required status checks** in strict mode; add the check names captured in T003; set no bypass actors
 
 **Checkpoint**: `main` now requires signed commits, linear history, and passing CI on an up-to-date branch — enforceable before Mergify executes any merge
 
@@ -47,9 +47,9 @@
 
 - [X] T006 [US1] Create `.mergify.yml` at the repository root containing the `standard` queue: `merge_method: fast-forward`, `max_checks_retries: 3`, `merge_conditions` requiring `#approved-reviews-by >= 1`, `#changes-requested-reviews-by = 0`, and `check-success` for each job name from T003
 - [X] T007 [US1] Add the `merge standard PRs` pull_request_rule to `.mergify.yml` — conditions: `base = main`, `-author = dependabot[bot]`, approval count, no change requests, all checks pass; action: `queue: standard`
-- [ ] T008 [US1] Configure Ruleset 3 (Review Gates) on `main` — enable **Require pull request**, set `required_approving_review_count: 1`, enable **Require code owner review** and **Dismiss stale reviews on push**; add the Mergify GitHub App as a bypass actor
+- [X] T008 [US1] Configure Ruleset 3 (Review Gates) on `main` — enable **Require pull request**, set `required_approving_review_count: 1`, enable **Require code owner review** and **Dismiss stale reviews on push**; add the Mergify GitHub App as a bypass actor
 - [X] T009 [US1] Add the `notify on merge failure` pull_request_rule to `.mergify.yml` — condition matching all terminal dequeue reasons (`checks-timeout`, `merge-failed`, `pr-dequeued`); actions: post a comment on the PR explaining the failure and add a `merge-failed` label
-- [ ] T010 [US1] Remove any legacy branch protection rules on `main` that conflict with the three new rulesets (Settings → Branches → Branch protection rules)
+- [X] T010 [US1] Remove any legacy branch protection rules on `main` that conflict with the three new rulesets (Settings → Branches → Branch protection rules)
 
 **Checkpoint**: US1 is fully functional — standard PRs are gated, merged fast-forward, and GPG signatures are preserved on `main`
 
