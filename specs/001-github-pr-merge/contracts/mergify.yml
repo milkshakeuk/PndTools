@@ -27,10 +27,11 @@ queue_rules:
       - base = main
       - "#approved-reviews-by >= 1"
       - "#changes-requested-reviews-by = 0"
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
 
   # Dependabot minor/patch — NuGet ecosystem.
   - name: nuget-deps
@@ -40,10 +41,11 @@ queue_rules:
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     merge_conditions:
       - base = main
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
 
   # Dependabot minor/patch — npm ecosystem.
   - name: npm-deps
@@ -53,10 +55,11 @@ queue_rules:
     max_checks_retries: 3
     merge_conditions:
       - base = main
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
 
   # Dependabot minor/patch — GitHub Actions ecosystem.
   - name: actions-deps
@@ -66,10 +69,11 @@ queue_rules:
     max_checks_retries: 3
     merge_conditions:
       - base = main
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
 
 pull_request_rules:
 
@@ -80,10 +84,11 @@ pull_request_rules:
       - -author = dependabot[bot]
       - "#approved-reviews-by >= 1"
       - "#changes-requested-reviews-by = 0"
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
     actions:
       queue:
         name: standard
@@ -99,10 +104,11 @@ pull_request_rules:
       - label = version-update:semver-major
       - "#approved-reviews-by >= 1"
       - "#changes-requested-reviews-by = 0"
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
     actions:
       queue:
         name: standard
@@ -115,10 +121,11 @@ pull_request_rules:
       - author = dependabot[bot]
       - label ~= ^version-update:semver-(minor|patch)$
       - label = nuget
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
     actions:
       queue:
         name: nuget-deps
@@ -130,10 +137,11 @@ pull_request_rules:
       - author = dependabot[bot]
       - label ~= ^version-update:semver-(minor|patch)$
       - label = npm
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
     actions:
       queue:
         name: npm-deps
@@ -145,10 +153,11 @@ pull_request_rules:
       - author = dependabot[bot]
       - label ~= ^version-update:semver-(minor|patch)$
       - label = github-actions
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
     actions:
       queue:
         name: actions-deps
@@ -164,10 +173,11 @@ pull_request_rules:
       - -label = version-update:semver-patch
       - "#approved-reviews-by >= 1"
       - "#changes-requested-reviews-by = 0"
+      - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
-      - check-success = analyze
+      - check-success = Analyze (csharp)
     actions:
       queue:
         name: standard
