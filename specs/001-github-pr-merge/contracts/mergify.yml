@@ -30,6 +30,7 @@ queue_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
 
   # Dependabot minor/patch — NuGet ecosystem.
   - name: nuget-deps
@@ -42,6 +43,7 @@ queue_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
 
   # Dependabot minor/patch — npm ecosystem.
   - name: npm-deps
@@ -54,6 +56,7 @@ queue_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
 
   # Dependabot minor/patch — GitHub Actions ecosystem.
   - name: actions-deps
@@ -66,6 +69,7 @@ queue_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
 
 pull_request_rules:
 
@@ -79,6 +83,7 @@ pull_request_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
     actions:
       queue:
         name: standard
@@ -97,6 +102,7 @@ pull_request_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
     actions:
       queue:
         name: standard
@@ -112,6 +118,7 @@ pull_request_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
     actions:
       queue:
         name: nuget-deps
@@ -126,6 +133,7 @@ pull_request_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
     actions:
       queue:
         name: npm-deps
@@ -140,6 +148,7 @@ pull_request_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
     actions:
       queue:
         name: actions-deps
@@ -158,6 +167,7 @@ pull_request_rules:
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
+      - check-success = analyze
     actions:
       queue:
         name: standard
