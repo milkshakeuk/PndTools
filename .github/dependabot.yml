@@ -8,6 +8,7 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    rebase-strategy: disabled
     labels:
       - nuget
 
@@ -17,6 +18,7 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    rebase-strategy: disabled
     labels:
       - npm
 
@@ -26,6 +28,7 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    rebase-strategy: disabled
     labels:
       - npm
 
@@ -35,5 +38,6 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    rebase-strategy: disabled
     labels:
       - github-actions
