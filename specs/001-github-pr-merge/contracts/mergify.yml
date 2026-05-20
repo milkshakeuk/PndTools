@@ -10,21 +10,63 @@
 #   - "github-actions"
 # These labels MUST be declared in .github/dependabot.yml or the ecosystem queue routing will never fire.
 #
+# Routing uses dependabot-update-type (a Mergify-native attribute that reads Dependabot PR metadata
+# directly), not label-based semver matching. This eliminates the need for a catch-all unlabelled rule
+# and is more reliable than depending on labels being correctly applied.
+#
+# Dependabot auto-rebase is disabled in .github/dependabot.yml across all ecosystems. Without this,
+# Dependabot rewrites commit SHAs on rebase, dequeuing the PR from Mergify and forcing a full re-check.
+#
+# merge_protections creates a visible PR status check. auto_merge_conditions: true handles automatic
+# queueing once all protections pass — no explicit queue action in pull_request_rules is needed.
+#
 # The batch_size value below is a recommended default.
 # It MUST be adjusted to match the open-pull-requests-limit in .github/dependabot.yml.
 #
 # max_checks_retries: controls how many times Mergify retries a failing CI check before
 # dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
 
+merge_protections:
+
+  # All PRs targeting main must pass CI quality gates and security scanning.
+  - name: CI quality gates
+    if:
+      - base = main
+    success_conditions:
+      - check-success = commitlint
+      - check-success = lint
+      - check-success = dependency-review
+      - check-success = build
+      - check-success = Analyze (csharp)
+
+  # Standard PRs and Dependabot major PRs additionally require codeowner approval.
+  # Dependabot minor/patch PRs are excluded — they auto-merge without human review.
+  - name: codeowner approval
+    if:
+      - base = main
+      - or:
+          - -author = dependabot[bot]
+          - dependabot-update-type = version-update:semver-major
+    success_conditions:
+      - "#approved-reviews-by >= 1"
+      - "#changes-requested-reviews-by = 0"
+
+merge_protections_settings:
+  auto_merge_conditions: true
+
 queue_rules:
 
-  # Standard PRs and Dependabot major-version PRs.
+  # Standard PRs and Dependabot major PRs.
   # No batching — each PR merges individually once conditions are met.
   - name: standard
     merge_method: fast-forward
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
-    merge_conditions:
+    queue_conditions:
       - base = main
+      - or:
+          - -author = dependabot[bot]
+          - dependabot-update-type = version-update:semver-major
+    merge_conditions:
       - "#approved-reviews-by >= 1"
       - "#changes-requested-reviews-by = 0"
       - check-success = commitlint
@@ -39,8 +81,12 @@ queue_rules:
     batch_size: 10                   # configurable; keep <= dependabot open-pull-requests-limit
     batch_max_wait_time: 30 min
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
-    merge_conditions:
+    queue_conditions:
       - base = main
+      - author = dependabot[bot]
+      - dependabot-update-type != version-update:semver-major
+      - label = nuget
+    merge_conditions:
       - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
@@ -53,8 +99,12 @@ queue_rules:
     batch_size: 10
     batch_max_wait_time: 30 min
     max_checks_retries: 3
-    merge_conditions:
+    queue_conditions:
       - base = main
+      - author = dependabot[bot]
+      - dependabot-update-type != version-update:semver-major
+      - label = npm
+    merge_conditions:
       - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
@@ -67,8 +117,12 @@ queue_rules:
     batch_size: 10
     batch_max_wait_time: 30 min
     max_checks_retries: 3
-    merge_conditions:
+    queue_conditions:
       - base = main
+      - author = dependabot[bot]
+      - dependabot-update-type != version-update:semver-major
+      - label = github-actions
+    merge_conditions:
       - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
@@ -76,111 +130,6 @@ queue_rules:
       - check-success = Analyze (csharp)
 
 pull_request_rules:
-
-  # Standard (non-Dependabot) PRs — enqueue when checks pass and codeowner has approved.
-  - name: merge standard PRs
-    conditions:
-      - base = main
-      - -author = dependabot[bot]
-      - "#approved-reviews-by >= 1"
-      - "#changes-requested-reviews-by = 0"
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: standard
-
-  # Dependabot major-version PRs — same gate as standard PRs.
-  # IMPORTANT: major rules MUST appear before minor/patch rules so that a PR carrying
-  # both semver-major and semver-minor labels (grouped update) is correctly treated as
-  # major. Mergify evaluates pull_request_rules in order and applies the first match.
-  - name: merge dependabot major updates
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label = version-update:semver-major
-      - "#approved-reviews-by >= 1"
-      - "#changes-requested-reviews-by = 0"
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: standard
-
-  # Dependabot minor/patch — NuGet. Auto-enqueue; no approval required.
-  # Only reached if no semver-major label is present (major rule above takes precedence).
-  - name: auto-merge dependabot nuget minor/patch
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label ~= ^version-update:semver-(minor|patch)$
-      - label = nuget
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: nuget-deps
-
-  # Dependabot minor/patch — npm. Auto-enqueue; no approval required.
-  - name: auto-merge dependabot npm minor/patch
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label ~= ^version-update:semver-(minor|patch)$
-      - label = npm
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: npm-deps
-
-  # Dependabot minor/patch — GitHub Actions. Auto-enqueue; no approval required.
-  - name: auto-merge dependabot actions minor/patch
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label ~= ^version-update:semver-(minor|patch)$
-      - label = github-actions
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: actions-deps
-
-  # Dependabot PRs with no semver label — catch-all, treat as major per FR-006; require codeowner approval.
-  # MUST appear after the major rule and before any minor/patch rules.
-  - name: merge dependabot unlabelled (treat as major)
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - -label = version-update:semver-major
-      - -label = version-update:semver-minor
-      - -label = version-update:semver-patch
-      - "#approved-reviews-by >= 1"
-      - "#changes-requested-reviews-by = 0"
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: standard
 
   # Failure notification — post a comment when a PR is dequeued for any terminal reason.
   - name: notify on merge failure
