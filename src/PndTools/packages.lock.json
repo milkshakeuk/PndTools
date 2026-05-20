@@ -13,11 +13,11 @@
       },
       "LTRData.DiscUtils.SquashFs": {
         "type": "Direct",
-        "requested": "[1.0.80, )",
-        "resolved": "1.0.80",
-        "contentHash": "L4pP5CMMG4kzlxvemcA9/a0YG/6GT7ZJIuHwrsAOlIw99PWDqnXublgkZglnJpNowrMe1Caabjt3B9XD1hwttw==",
+        "requested": "[1.0.81, )",
+        "resolved": "1.0.81",
+        "contentHash": "YW7ZFVrPuLypkwXgYbqzwu6pPe2gykqjcTNOP7rnOxIpxW09Y3c5ijgoZmkE+O3yixiDWn4eaAMoZsijegJjNg==",
         "dependencies": {
-          "LTRData.DiscUtils.Core": "1.0.80"
+          "LTRData.DiscUtils.Core": "1.0.81"
         }
       },
       "LTRData.DiscUtils.Streams": {
@@ -31,10 +31,10 @@
       },
       "LTRData.DiscUtils.Core": {
         "type": "Transitive",
-        "resolved": "1.0.80",
-        "contentHash": "kR4g8sFVylDk0ZnPbwuP1LXiXi7/dL/wt+x7qvJMEI4WPLMR5Q6DktfdUpRHBLB3Kh96eVsADCpw7+lGaxNrBA==",
+        "resolved": "1.0.81",
+        "contentHash": "USSXDyalFB7f5LuPigEBbmNLJBb5bgHCTdQRQLbVzMoxeMaQ5+RdRJAGrDpDFdsk4Bf3TYjxVHotmyl1aGf/lQ==",
         "dependencies": {
-          "LTRData.DiscUtils.Streams": "1.0.80"
+          "LTRData.DiscUtils.Streams": "1.0.81"
         }
       },
       "LTRData.Extensions": {
