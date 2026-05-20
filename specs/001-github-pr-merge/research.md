@@ -63,21 +63,32 @@
 
 ### Mergify configuration syntax
 
-**Decision**: Use `merge_conditions` (not `conditions`) in queue rules
+**Decision**: `merge_conditions` are omitted from all queue rules; `queue_conditions` only.
 
-**Rationale**: The `conditions` attribute in `queue_rules` was deprecated on 2026-05-06 and will be removed on 2026-07-31. All queue-level conditions use `merge_conditions`.
+**Rationale**: Mergify automatically injects conditions from active GitHub Repository Rulesets into its queue evaluation. The four active rulesets (CI Quality Gates, Security Scanning, Review Gates, Commit Integrity) already enforce every condition that would otherwise appear in `merge_conditions`. Repeating them in Mergify configuration is redundant and creates a maintenance burden if check names change. The `merge_protections` success_conditions still list CI checks explicitly because `auto_merge_conditions: true` requires them to evaluate protections and trigger automatic queueing — they serve a different purpose there (signalling readiness) rather than gatekeeping the merge itself.
+
+Note: the `conditions` attribute in `queue_rules` was deprecated on 2026-05-06 and removed on 2026-07-31.
+
+---
+
+### GitHub Ruleset injection into Mergify queue conditions
+
+**Decision**: Rely on Mergify's automatic ruleset injection; do not duplicate ruleset conditions in `merge_conditions`.
+
+**Rationale**: Mergify reads active GitHub Repository Rulesets and injects their requirements directly into queue condition evaluation. This was confirmed by inspecting the live Mergify queue status comment, which showed every CI check condition tagged `[🛡 GitHub repository ruleset rule ...]` and passing without any corresponding `merge_conditions` entry. The Review Gates ruleset (approval requirement) is also injected — controlled per-PR-author via the ruleset bypass list: Mergify has `bypass_mode: always` (needed for its direct fast-forward push to `main`); Dependabot has `bypass_mode: pull_request` (prevents approval injection on minor/patch PRs while retaining it for major PRs via the `codeowner approval` merge_protection).
 
 ---
 
 ### Dependabot grouped updates
 
-**Decision**: Dependabot grouped updates are not used; each dependency gets its own individual PR.
+**Decision**: Grouped updates used only for `LTRData.DiscUtils.*`; all other dependencies get individual PRs.
 
-**Rationale**: Grouped updates produce a single PR per ecosystem group. If a group contains both a major and a minor dependency bump, that PR carries both `version-update:semver-major` and `version-update:semver-minor` labels. The FR-006 tiebreaker (highest severity wins) would route the entire group to the `standard` queue, requiring human approval and blocking the minor update from auto-merging. Individual per-dependency PRs guarantee each PR carries exactly one semver label, so major and minor/patch updates are always routed to separate queues and cannot block each other.
+**Rationale**: The three `LTRData.DiscUtils.*` packages (`Iso9660`, `SquashFs`, `Streams`) share a version and must be updated together — separate PRs trigger NU1605 package downgrade errors at build time. A targeted group (`ltrdatadiscutils`) consolidates them into a single PR. All other ecosystems use individual PRs to guarantee each PR carries exactly one semver label, keeping major and minor/patch updates routable to separate queues independently.
 
 **Alternatives considered**:
 
-- Dependabot grouped updates per ecosystem — simpler PR list but risks a major update holding minor/patch updates hostage to human review within the same group.
+- No grouping at all — causes NU1605 build failures when `LTRData.DiscUtils.*` packages are bumped individually.
+- Full ecosystem grouping — simpler PR list but risks a major update holding minor/patch updates hostage to human review within the same group.
 
 ---
 

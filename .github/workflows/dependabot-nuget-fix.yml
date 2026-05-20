@@ -1,0 +1,135 @@
+name: Dependabot NuGet Fix
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  fix:
+    if: github.actor == 'dependabot[bot]' && startsWith(github.head_ref, 'dependabot/nuget/')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 2
+
+      - uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          global-json-file: global.json
+          dotnet-quality: ga
+
+      - name: Regenerate lock files
+        id: lock
+        run: |
+          dotnet restore --force-evaluate
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check commit message
+        id: message
+        run: |
+          full=$(git log -1 --format=%B)
+          subject=$(printf '%s\n' "$full" | head -1)
+
+          if printf '%s\n' "$subject" | grep -qE '^build(\(deps(-dev)?\))?: bump'; then
+            needs_fix=false
+            fixed="$full"
+          elif printf '%s\n' "$subject" | grep -qE '^build: Bump'; then
+            needs_fix=true
+            fixed=$(printf '%s\n' "$full" | sed '1s/^build: Bump/build(deps): bump/')
+          elif printf '%s\n' "$subject" | grep -qE '^Bump'; then
+            needs_fix=true
+            fixed=$(printf '%s\n' "$full" | sed '1s/^Bump/build(deps): bump/')
+          else
+            needs_fix=false
+            fixed="$full"
+          fi
+
+          echo "needs_fix=${needs_fix}" >> "$GITHUB_OUTPUT"
+          echo "subject=$(printf '%s\n' "$fixed" | head -1)" >> "$GITHUB_OUTPUT"
+          {
+            echo "full<<COMMIT_MSG_EOF"
+            printf '%s\n' "$fixed"
+            echo "COMMIT_MSG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Amend commit via API
+        if: steps.lock.outputs.changed == 'true' || steps.message.outputs.needs_fix == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MESSAGE: ${{ steps.message.outputs.full }}
+          BRANCH: ${{ github.head_ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          CURRENT_SHA=$(git rev-parse HEAD)
+          PARENT_SHA=$(git rev-parse HEAD^)
+          CURRENT_TREE_SHA=$(gh api "repos/${REPO}/git/commits/${CURRENT_SHA}" --jq '.tree.sha')
+
+          # Build tree entries for any changed lock files
+          TREE_ENTRIES="[]"
+          for file in $(git diff --name-only); do
+            if [[ "$file" == *packages.lock.json ]]; then
+              blob_sha=$(gh api "repos/${REPO}/git/blobs" \
+                -f content="$(base64 -w0 < "$file")" \
+                -f encoding="base64" \
+                --jq '.sha')
+              TREE_ENTRIES=$(echo "$TREE_ENTRIES" | jq \
+                --arg path "$file" \
+                --arg sha "$blob_sha" \
+                '. + [{"path": $path, "mode": "100644", "type": "blob", "sha": $sha}]')
+            fi
+          done
+
+          # Create a new tree only if lock files changed; otherwise reuse the current tree
+          if [ "$(echo "$TREE_ENTRIES" | jq 'length')" -gt 0 ]; then
+            NEW_TREE_SHA=$(jq -n \
+              --arg base_tree "$CURRENT_TREE_SHA" \
+              --argjson tree "$TREE_ENTRIES" \
+              '{base_tree: $base_tree, tree: $tree}' \
+              | gh api "repos/${REPO}/git/trees" --input - --jq '.sha')
+          else
+            NEW_TREE_SHA="$CURRENT_TREE_SHA"
+          fi
+
+          # Preserve the original author from the Dependabot commit
+          AUTHOR_NAME=$(git log -1 --format='%an')
+          AUTHOR_EMAIL=$(git log -1 --format='%ae')
+          AUTHOR_DATE=$(git log -1 --format='%aI')
+
+          # Create the replacement commit. Setting committer explicitly to the
+          # GitHub Actions bot identity ensures GitHub marks it as Verified.
+          PAYLOAD=$(jq -n \
+            --arg message "$MESSAGE" \
+            --arg tree "$NEW_TREE_SHA" \
+            --arg parent "$PARENT_SHA" \
+            --arg author_name "$AUTHOR_NAME" \
+            --arg author_email "$AUTHOR_EMAIL" \
+            --arg author_date "$AUTHOR_DATE" \
+            '{message: $message, tree: $tree, parents: [$parent],
+              author: {name: $author_name, email: $author_email, date: $author_date},
+              committer: {name: "github-actions[bot]", email: "41898282+github-actions[bot]@users.noreply.github.com"}}')
+          NEW_COMMIT_SHA=$(echo "$PAYLOAD" | gh api "repos/${REPO}/git/commits" --input - --jq '.sha')
+
+          # Force-update the branch to point at the new commit
+          gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
+            -X PATCH \
+            -f "sha=${NEW_COMMIT_SHA}" \
+            -F force=true
+
+      - name: Update PR title
+        if: steps.message.outputs.needs_fix == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SUBJECT: ${{ steps.message.outputs.subject }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --title "$SUBJECT"
