@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.0",
-    "@commitlint/config-conventional": "^21.0.0",
+    "@commitlint/config-conventional": "^21.0.1",
     "@j178/prek": "^0.3.13",
     "markdownlint-cli2": "^0.22.1"
   }
