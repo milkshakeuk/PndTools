@@ -42,32 +42,32 @@
       },
       "LTRData.DiscUtils.Core": {
         "type": "Transitive",
-        "resolved": "1.0.80",
-        "contentHash": "kR4g8sFVylDk0ZnPbwuP1LXiXi7/dL/wt+x7qvJMEI4WPLMR5Q6DktfdUpRHBLB3Kh96eVsADCpw7+lGaxNrBA==",
+        "resolved": "1.0.81",
+        "contentHash": "USSXDyalFB7f5LuPigEBbmNLJBb5bgHCTdQRQLbVzMoxeMaQ5+RdRJAGrDpDFdsk4Bf3TYjxVHotmyl1aGf/lQ==",
         "dependencies": {
-          "LTRData.DiscUtils.Streams": "1.0.80"
+          "LTRData.DiscUtils.Streams": "1.0.81"
         }
       },
       "LTRData.DiscUtils.Iso9660": {
         "type": "Transitive",
-        "resolved": "1.0.80",
-        "contentHash": "i8sdM50tgJLVACjY2bFpSqqLLB7eozqAB+JAYStFrRM3l6x2Ko35H6U/jX9zGDCCxby9eeZ0Dv5+jTju7TXH5w==",
+        "resolved": "1.0.81",
+        "contentHash": "buHwKI2XWGg61RYYkAp0xEyC22yEvUFpnYMveNEzDZ8zKaK1YSdKB6IciGT0WDkQH1bKCtFo/9hnSS1S6kjFwA==",
         "dependencies": {
-          "LTRData.DiscUtils.Core": "1.0.80"
+          "LTRData.DiscUtils.Core": "1.0.81"
         }
       },
       "LTRData.DiscUtils.SquashFs": {
         "type": "Transitive",
-        "resolved": "1.0.80",
-        "contentHash": "L4pP5CMMG4kzlxvemcA9/a0YG/6GT7ZJIuHwrsAOlIw99PWDqnXublgkZglnJpNowrMe1Caabjt3B9XD1hwttw==",
+        "resolved": "1.0.81",
+        "contentHash": "YW7ZFVrPuLypkwXgYbqzwu6pPe2gykqjcTNOP7rnOxIpxW09Y3c5ijgoZmkE+O3yixiDWn4eaAMoZsijegJjNg==",
         "dependencies": {
-          "LTRData.DiscUtils.Core": "1.0.80"
+          "LTRData.DiscUtils.Core": "1.0.81"
         }
       },
       "LTRData.DiscUtils.Streams": {
         "type": "Transitive",
-        "resolved": "1.0.80",
-        "contentHash": "Oi13jeefYJcjUx4S40EJMteUjlFRNMetf8l3h+Jfz15fgOjTEjNH3K01hfOIiNV040uNb6QWdqGcLQhunM3Zuw==",
+        "resolved": "1.0.81",
+        "contentHash": "qtbDUzXkQ7rOSfuq4P3NMyiPSJptaWqVL0N5+Ckd/nTfqaORcJMniErvunVWWeA57tE/BHwI4i/KtpuEDanbzg==",
         "dependencies": {
           "LTRData.Extensions": "1.0.22"
         }
@@ -206,9 +206,9 @@
       "pndtools": {
         "type": "Project",
         "dependencies": {
-          "LTRData.DiscUtils.Iso9660": "[1.0.80, )",
-          "LTRData.DiscUtils.SquashFs": "[1.0.80, )",
-          "LTRData.DiscUtils.Streams": "[1.0.80, )"
+          "LTRData.DiscUtils.Iso9660": "[1.0.81, )",
+          "LTRData.DiscUtils.SquashFs": "[1.0.81, )",
+          "LTRData.DiscUtils.Streams": "[1.0.81, )"
         }
       }
     }
