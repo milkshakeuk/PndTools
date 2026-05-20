@@ -1,26 +1,39 @@
 version: 2
 
 updates:
+
+  # NuGet (.NET) dependencies
   - package-ecosystem: nuget
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
+    labels:
+      - nuget
 
+  # npm (root — Node.js devDependencies)
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
+    labels:
+      - npm
 
+  # npm (site — Astro/Starlight docs site)
   - package-ecosystem: npm
     directory: /site
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
+    labels:
+      - npm
 
+  # GitHub Actions workflow dependencies
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
+    labels:
+      - github-actions
