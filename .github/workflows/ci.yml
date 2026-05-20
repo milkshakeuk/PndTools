@@ -56,6 +56,10 @@ jobs:
           global-json-file: global.json
           dotnet-quality: ga
           cache: true
+          cache-dependency-path: |
+            src/PndTools/packages.lock.json
+            test/PndTools.Tests/packages.lock.json
+            test/PndTools.Benchmarks/packages.lock.json
 
       - name: Restore
         run: dotnet restore --locked-mode

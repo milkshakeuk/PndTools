@@ -2,7 +2,7 @@
 
 **Feature**: 001-github-pr-merge | **Date**: 2026-05-18
 
-Three rulesets are configured on the `main` branch. Each has a single concern and does not overlap with the others. All three are enforced for all actors except where a bypass is explicitly noted.
+Four rulesets are configured on the `main` branch. Each has a single concern and does not overlap with the others. All four are enforced for all actors except where a bypass is explicitly noted.
 
 ## Ruleset 1: Commit Integrity
 
@@ -27,21 +27,40 @@ Three rulesets are configured on the `main` branch. Each has a single concern an
 | --- | --- |
 | Required status checks | strict mode (branch must be up to date); checks listed below |
 
-**Required checks** (replace with actual workflow job names):
+**Required checks**:
 
-- `build` — `dotnet build` zero-warnings gate
-- `test` — `dotnet test` all-pass gate
+- `commitlint` — conventional commit message format gate
+- `lint` — markdownlint zero-error gate
+- `dependency-review` — blocks PRs introducing vulnerable packages
+- `build` — `dotnet build` zero-warnings gate and `dotnet test` all-pass gate
 
-Add further checks here as new workflows are introduced. The strict mode setting enforces FR-010 (branch must be up to date with main before merge).
+The strict mode setting enforces FR-010 (branch must be up to date with main before merge).
 
 **Enforces**: FR-001, FR-010
 
 ---
 
-## Ruleset 3: Review Gates
+## Ruleset 3: Security Scanning
 
 **Target**: `main` branch
-**Bypass actors**: Mergify GitHub App — scoped to this ruleset only, allowing the fast-forward push to `main` after all conditions have been validated by Mergify
+**Bypass actors**: none
+
+| Rule | Configuration |
+| --- | --- |
+| Required status checks | strict mode; checks listed below |
+
+**Required checks**:
+
+- `Analyze (csharp)` — CodeQL static analysis security gate
+
+**Enforces**: FR-001
+
+---
+
+## Ruleset 4: Review Gates
+
+**Target**: `main` branch
+**Bypass actors**: Mergify GitHub App (ID: 10562) — scoped to this ruleset only, allowing the fast-forward push to `main` after all conditions have been validated by Mergify
 
 | Rule | Configuration |
 | --- | --- |
