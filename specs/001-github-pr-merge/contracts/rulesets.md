@@ -48,10 +48,16 @@ The strict mode setting enforces FR-010 (branch must be up to date with main bef
 | Rule | Configuration |
 | --- | --- |
 | Required status checks | strict mode; checks listed below |
+| Require code scanning results | CodeQL; thresholds listed below |
 
 **Required checks**:
 
 - `Analyze (csharp)` — CodeQL static analysis security gate
+
+**Code scanning thresholds**:
+
+- Alerts threshold: `errors` — blocks on error-level findings
+- Security alerts threshold: `high_or_higher` — blocks on high and critical severity vulnerabilities
 
 **Enforces**: FR-001
 
@@ -60,7 +66,10 @@ The strict mode setting enforces FR-010 (branch must be up to date with main bef
 ## Ruleset 4: Review Gates
 
 **Target**: `main` branch
-**Bypass actors**: Mergify GitHub App (ID: 10562) — scoped to this ruleset only, allowing the fast-forward push to `main` after all conditions have been validated by Mergify
+**Bypass actors**:
+
+- Mergify GitHub App (ID: 10562) — `bypass_mode: exempt`; allows the fast-forward push to `main`
+- Dependabot (ID: 29110) — `bypass_mode: pull_request`; prevents approval conditions from being injected into Mergify queue evaluation for Dependabot PRs; the `codeowner approval` merge_protection still gates major updates
 
 | Rule | Configuration |
 | --- | --- |

@@ -45,9 +45,9 @@
 
 **Independent Test**: Open a test PR; confirm it cannot be merged before checks pass, cannot be merged without codeowner approval, and once both conditions are met Mergify merges it via fast-forward leaving the commit signature intact on `main`
 
-- [X] T006 [US1] Create `.mergify.yml` at the repository root containing the `standard` queue: `merge_method: fast-forward`, `max_checks_retries: 3`, `merge_conditions` requiring `#approved-reviews-by >= 1`, `#changes-requested-reviews-by = 0`, and `check-success` for each job name from T003
+- [X] T006 [US1] Create `.mergify.yml` at the repository root containing the `standard` queue: `merge_method: fast-forward`, `max_checks_retries: 3`, `queue_conditions` for `base = main` and `-author = dependabot[bot]`; no `merge_conditions` needed — CI checks and approval are enforced by GitHub rulesets and injected automatically by Mergify
 - [X] T007 [US1] Add the `merge standard PRs` pull_request_rule to `.mergify.yml` — conditions: `base = main`, `-author = dependabot[bot]`, approval count, no change requests, all checks pass; action: `queue: standard`
-- [X] T008 [US1] Configure Ruleset 3 (Review Gates) on `main` — enable **Require pull request**, set `required_approving_review_count: 1`, enable **Require code owner review** and **Dismiss stale reviews on push**; add the Mergify GitHub App as a bypass actor
+- [X] T008 [US1] Configure Ruleset 3 (Review Gates) on `main` — enable **Require pull request**, set `required_approving_review_count: 1`, enable **Require code owner review** and **Dismiss stale reviews on push**; bypass actors: Mergify (`bypass_mode: always` — needed for direct fast-forward push to `main`), Dependabot (`bypass_mode: pull_request` — prevents approval injection on minor/patch PRs)
 - [X] T009 [US1] Add the `notify on merge failure` pull_request_rule to `.mergify.yml` — condition matching all terminal dequeue reasons (`checks-timeout`, `merge-failed`, `pr-dequeued`); actions: post a comment on the PR explaining the failure and add a `merge-failed` label
 - [X] T010 [US1] Remove any legacy branch protection rules on `main` that conflict with the three new rulesets (Settings → Branches → Branch protection rules)
 
@@ -62,8 +62,8 @@
 **Independent Test**: Observe a live Dependabot minor or patch PR — after checks pass it should enqueue automatically and merge within 35 minutes without any human action (30-minute fill window plus merge execution time, per SC-002); each dependency update appears as its own commit on `main`
 
 - [X] T011 [P] [US2] Create `.github/dependabot.yml` with three ecosystem entries (`nuget`, `npm`, `github-actions`), each targeting `/`, scheduled weekly, `open-pull-requests-limit: 10`, and a `labels:` entry applying the ecosystem label (`nuget`, `npm`, `github-actions` respectively) — these labels are required for Mergify ecosystem queue routing and are not added by Dependabot by default
-- [X] T012 [US2] Add `nuget-deps`, `npm-deps`, and `actions-deps` batch queues to `.mergify.yml` — each with `merge_method: fast-forward`, `batch_size: 10`, `batch_max_wait_time: 30 min`, `max_checks_retries: 3`, and `merge_conditions` requiring `base = main` and all CI checks from T003
-- [X] T013 [US2] Add the three auto-merge pull_request_rules to `.mergify.yml` — one per ecosystem (`nuget`, `npm`, `github-actions`) — conditions: `base = main`, `author = dependabot[bot]`, `label ~= ^version-update:semver-(minor|patch)$`, the ecosystem label, and all CI checks; action: `queue` into the matching ecosystem queue
+- [X] T012 [US2] Add `nuget-deps`, `npm-deps`, and `actions-deps` batch queues to `.mergify.yml` — each with `merge_method: fast-forward`, `batch_size: 10`, `batch_max_wait_time: 30 min`, `max_checks_retries: 3`, and `queue_conditions` for `base = main`, `author = dependabot[bot]`, and the ecosystem label; no `merge_conditions` needed — CI checks are enforced by GitHub rulesets
+- [X] T013 [US2] Routing handled via `merge_protections` + `auto_merge_conditions: true` — Mergify automatically queues PRs into the matching ecosystem queue when all protections pass; no explicit `pull_request_rules` queue actions required
 
 **Checkpoint**: US2 is fully functional — eligible Dependabot minor/patch PRs enqueue automatically into the correct ecosystem queue and batch-merge within the 30-minute window
 
@@ -75,8 +75,8 @@
 
 **Independent Test**: Observe a live Dependabot major-version PR — it should remain open after checks pass and only merge once a codeowner approves, following the same path as a standard PR
 
-- [X] T014a [US3] Add the `merge dependabot major updates` pull_request_rule to `.mergify.yml` — conditions: `base = main`, `author = dependabot[bot]`, `label = version-update:semver-major`, `#approved-reviews-by >= 1`, `#changes-requested-reviews-by = 0`, all CI checks; action: `queue: standard`
-- [X] T014b [US3] Add the `merge dependabot unlabelled (treat as major)` catch-all pull_request_rule to `.mergify.yml` — conditions: `base = main`, `author = dependabot[bot]`, absence of all three semver labels, `#approved-reviews-by >= 1`, `#changes-requested-reviews-by = 0`, all CI checks; action: `queue: standard` (FR-006)
+- [X] T014a [US3] Major Dependabot PRs are gated by the `codeowner approval` merge_protection (`dependabot-update-type = version-update:semver-major` condition) — `auto_merge_conditions: true` will not queue them until a codeowner approves; they then route into the matching ecosystem queue via `queue_conditions`
+- [X] T014b [US3] Add Dependabot to the Review Gates ruleset bypass list (`bypass_mode: pull_request`) — prevents approval conditions from being injected into Mergify queue evaluation for minor/patch PRs while retaining the `codeowner approval` merge_protection gate for major PRs (FR-006)
 
 **Checkpoint**: US3 is fully functional — Dependabot major PRs require approval and route through the standard queue
 
