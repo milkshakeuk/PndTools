@@ -9,6 +9,9 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     rebase-strategy: disabled
+    commit-message:
+      prefix: build
+      include: scope
     groups:
       ltrdataDiscutils:
         patterns:
