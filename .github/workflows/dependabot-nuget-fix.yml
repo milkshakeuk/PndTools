@@ -20,7 +20,7 @@ jobs:
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: app-token
         with:
-          app-id: ${{ secrets.MILKSHAKE_WRITER_BOT_APP_ID }}
+          client-id: ${{ secrets.MILKSHAKE_WRITER_BOT_CLIENT_ID }}
           private-key: ${{ secrets.MILSHAKE_WRITER_BOT_APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -30,25 +30,37 @@ jobs:
 
       - name: Check commit message
         id: message
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           full=$(git log -1 --format=%B)
           subject=$(printf '%s\n' "$full" | head -1)
 
           if printf '%s\n' "$subject" | grep -qE '^build(\(deps(-dev)?\))?: bump'; then
-            needs_fix=false
+            message_fix=false
             fixed="$full"
           elif printf '%s\n' "$subject" | grep -qE '^build: Bump'; then
-            needs_fix=true
+            message_fix=true
             fixed=$(printf '%s\n' "$full" | sed '1s/^build: Bump/build(deps): bump/')
           elif printf '%s\n' "$subject" | grep -qE '^Bump'; then
-            needs_fix=true
+            message_fix=true
             fixed=$(printf '%s\n' "$full" | sed '1s/^Bump/build(deps): bump/')
           else
-            needs_fix=false
+            message_fix=false
             fixed="$full"
           fi
 
+          CURRENT_SHA=$(git rev-parse HEAD)
+          signed=$(gh api "repos/${GITHUB_REPOSITORY}/git/commits/${CURRENT_SHA}" --jq '.verification.verified')
+
+          if [ "$message_fix" = "true" ] || [ "$signed" = "false" ]; then
+            needs_fix=true
+          else
+            needs_fix=false
+          fi
+
           echo "needs_fix=${needs_fix}" >> "$GITHUB_OUTPUT"
+          echo "message_fix=${message_fix}" >> "$GITHUB_OUTPUT"
           echo "subject=$(printf '%s\n' "$fixed" | head -1)" >> "$GITHUB_OUTPUT"
           {
             echo "full<<COMMIT_MSG_EOF"
@@ -56,25 +68,25 @@ jobs:
             echo "COMMIT_MSG_EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Amend commit message via API
+      - name: Debug token identity
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh auth status
+
+      - name: Amend commit and sign via API
         if: steps.message.outputs.needs_fix == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           MESSAGE: ${{ steps.message.outputs.full }}
           BRANCH: ${{ github.head_ref }}
-          REPO: ${{ github.repository }}
-          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          APP_ID: ${{ steps.app-token.outputs.user-id }}
         run: |
           CURRENT_SHA=$(git rev-parse HEAD)
           PARENT_SHA=$(git rev-parse HEAD^)
-          TREE_SHA=$(gh api "repos/${REPO}/git/commits/${CURRENT_SHA}" --jq '.tree.sha')
+          TREE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/commits/${CURRENT_SHA}" --jq '.tree.sha')
 
           AUTHOR_NAME=$(git log -1 --format='%an')
           AUTHOR_EMAIL=$(git log -1 --format='%ae')
           AUTHOR_DATE=$(git log -1 --format='%aI')
-          COMMITTER_NAME="${APP_SLUG}[bot]"
-          COMMITTER_EMAIL="${APP_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
 
           NEW_COMMIT_SHA=$(jq -n \
             --arg message "$MESSAGE" \
@@ -83,20 +95,18 @@ jobs:
             --arg author_name "$AUTHOR_NAME" \
             --arg author_email "$AUTHOR_EMAIL" \
             --arg author_date "$AUTHOR_DATE" \
-            --arg committer_name "$COMMITTER_NAME" \
-            --arg committer_email "$COMMITTER_EMAIL" \
             '{message: $message, tree: $tree, parents: [$parent],
-              author: {name: $author_name, email: $author_email, date: $author_date},
-              committer: {name: $committer_name, email: $committer_email}}' \
-            | gh api "repos/${REPO}/git/commits" --input - --jq '.sha')
+              author: {name: $author_name, email: $author_email, date: $author_date}}' \
+            | gh api "repos/${GITHUB_REPOSITORY}/git/commits" --input - --jq '.sha')
 
-          gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
+          echo "New commit SHA: ${NEW_COMMIT_SHA}"
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs/heads/${BRANCH}" \
             -X PATCH \
             -f "sha=${NEW_COMMIT_SHA}" \
             -F force=true
 
       - name: Update PR title
-        if: steps.message.outputs.needs_fix == 'true'
+        if: steps.message.outputs.message_fix == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           SUBJECT: ${{ steps.message.outputs.subject }}
