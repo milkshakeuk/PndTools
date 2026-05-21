@@ -68,15 +68,17 @@ jobs:
             echo "COMMIT_MSG_EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Debug token identity
+      - name: Get GitHub App user ID
+        id: get-user-id
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: gh auth status
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
 
       - name: Amend commit and sign via API
         if: steps.message.outputs.needs_fix == 'true'
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
           MESSAGE: ${{ steps.message.outputs.full }}
           BRANCH: ${{ github.head_ref }}
         run: |
@@ -84,15 +86,22 @@ jobs:
           PARENT_SHA=$(git rev-parse HEAD^)
           TREE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/commits/${CURRENT_SHA}" --jq '.tree.sha')
 
+          AUTHOR_NAME=$(git log -1 --format='%an')
+          AUTHOR_EMAIL=$(git log -1 --format='%ae')
+          AUTHOR_DATE=$(git log -1 --format='%aI')
+
           NEW_COMMIT_SHA=$(jq -n \
             --arg message "$MESSAGE" \
             --arg tree "$TREE_SHA" \
             --arg parent "$PARENT_SHA" \
-            '{message: $message, tree: $tree, parents: [$parent]}' \
+            --arg author_name "$AUTHOR_NAME" \
+            --arg author_email "$AUTHOR_EMAIL" \
+            --arg author_date "$AUTHOR_DATE" \
+            '{message: $message, tree: $tree, parents: [$parent],
+              author: {name: $author_name, email: $author_email, date: $author_date}}' \
             | gh api "repos/${GITHUB_REPOSITORY}/git/commits" --input - --jq '.sha')
 
-          echo "New commit SHA: ${NEW_COMMIT_SHA}"
-          gh api "repos/${GITHUB_REPOSITORY}/git/refs/heads/${BRANCH}" \
+          GH_TOKEN="$APP_TOKEN" gh api "repos/${GITHUB_REPOSITORY}/git/refs/heads/${BRANCH}" \
             -X PATCH \
             -f "sha=${NEW_COMMIT_SHA}" \
             -F force=true
