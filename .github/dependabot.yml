@@ -8,7 +8,6 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    rebase-strategy: disabled
     groups:
       ltrdataDiscutils:
         patterns:
@@ -22,7 +21,6 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    rebase-strategy: disabled
     labels:
       - npm
 
@@ -32,7 +30,6 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    rebase-strategy: disabled
     labels:
       - npm
 
@@ -42,6 +39,5 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
-    rebase-strategy: disabled
     labels:
       - github-actions

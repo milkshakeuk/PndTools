@@ -30,8 +30,6 @@ queue_rules:
     merge_method: fast-forward
     branch_protection_injection_mode: none
     merge_bot_account: milkshakeuk
-    batch_size: 10                   # configurable; keep <= dependabot open-pull-requests-limit
-    batch_max_wait_time: 30 min
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -42,8 +40,6 @@ queue_rules:
     merge_method: fast-forward
     branch_protection_injection_mode: none
     merge_bot_account: milkshakeuk
-    batch_size: 10
-    batch_max_wait_time: 30 min
     max_checks_retries: 3
     queue_conditions:
       - base = main
@@ -54,8 +50,6 @@ queue_rules:
     merge_method: fast-forward
     branch_protection_injection_mode: none
     merge_bot_account: milkshakeuk
-    batch_size: 10
-    batch_max_wait_time: 30 min
     max_checks_retries: 3
     queue_conditions:
       - base = main

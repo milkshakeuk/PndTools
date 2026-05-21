@@ -17,6 +17,12 @@ jobs:
       pull-requests: write
 
     steps:
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ secrets.MILKSHAKE_WRITER_BOT_APP_ID }}
+          private-key: ${{ secrets.MILSHAKE_WRITER_BOT_APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.head_ref }}
@@ -53,20 +59,35 @@ jobs:
       - name: Amend commit message via API
         if: steps.message.outputs.needs_fix == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           MESSAGE: ${{ steps.message.outputs.full }}
           BRANCH: ${{ github.head_ref }}
           REPO: ${{ github.repository }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          APP_ID: ${{ steps.app-token.outputs.user-id }}
         run: |
           CURRENT_SHA=$(git rev-parse HEAD)
           PARENT_SHA=$(git rev-parse HEAD^)
           TREE_SHA=$(gh api "repos/${REPO}/git/commits/${CURRENT_SHA}" --jq '.tree.sha')
 
+          AUTHOR_NAME=$(git log -1 --format='%an')
+          AUTHOR_EMAIL=$(git log -1 --format='%ae')
+          AUTHOR_DATE=$(git log -1 --format='%aI')
+          COMMITTER_NAME="${APP_SLUG}[bot]"
+          COMMITTER_EMAIL="${APP_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+
           NEW_COMMIT_SHA=$(jq -n \
             --arg message "$MESSAGE" \
             --arg tree "$TREE_SHA" \
             --arg parent "$PARENT_SHA" \
-            '{message: $message, tree: $tree, parents: [$parent]}' \
+            --arg author_name "$AUTHOR_NAME" \
+            --arg author_email "$AUTHOR_EMAIL" \
+            --arg author_date "$AUTHOR_DATE" \
+            --arg committer_name "$COMMITTER_NAME" \
+            --arg committer_email "$COMMITTER_EMAIL" \
+            '{message: $message, tree: $tree, parents: [$parent],
+              author: {name: $author_name, email: $author_email, date: $author_date},
+              committer: {name: $committer_name, email: $committer_email}}' \
             | gh api "repos/${REPO}/git/commits" --input - --jq '.sha')
 
           gh api "repos/${REPO}/git/refs/heads/${BRANCH}" \
