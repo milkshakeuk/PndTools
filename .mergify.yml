@@ -127,6 +127,17 @@ pull_request_rules:
       queue:
         name: actions-deps
 
+  # Keep Dependabot PR branches up to date with main so they don't fall behind
+  # and get dequeued for failing the branch up-to-date requirement.
+  - name: rebase Dependabot PRs when outdated
+    conditions:
+      - base = main
+      - author = dependabot[bot]
+      - -conflict
+      - -draft
+    actions:
+      update:
+
   # Failure notification — post a comment when a PR is dequeued for any terminal reason.
   - name: notify on merge failure
     conditions:
