@@ -6,9 +6,9 @@
 
 ## Summary
 
-Configure the PndTools GitHub repository to enforce fast-forward-only merges that preserve GPG signatures, gate standard and Dependabot major-version PRs behind codeowner approval and passing CI checks, and automatically batch-merge Dependabot minor/patch PRs per package ecosystem using Mergify's merge queue with a 30-minute fill window.
+Configure the PndTools GitHub repository to enforce fast-forward-only merges that preserve commit signatures, gate standard and Dependabot major-version PRs behind codeowner approval and passing CI checks, and automatically merge Dependabot minor/patch PRs per package ecosystem via Mergify's merge queue.
 
-The solution is configuration-only: three GitHub Repository Rulesets enforce commit integrity, CI quality gates, and review gates; Mergify (free tier, full feature set on public repos) executes the fast-forward merges and manages the per-ecosystem batch queues; Dependabot is configured with one entry per ecosystem aligned to the Mergify batch size limits.
+The solution combines configuration and a small GitHub Actions workflow: three GitHub Repository Rulesets enforce commit integrity, CI quality gates, and review gates; Mergify (free tier, full feature set on public repos) executes the fast-forward merges via per-ecosystem queues; a Dependabot NuGet Fix workflow amends non-conventional commit messages and re-signs commits using a dedicated GitHub App (`milkshake-writer-bot`) before CI re-runs.
 
 ## Technical Context
 
@@ -20,6 +20,7 @@ The solution is configuration-only: three GitHub Repository Rulesets enforce com
 - GitHub Repository Rulesets (GA)
 - GitHub Dependabot version updates
 - GitHub Actions (existing CI workflows)
+- `milkshake-writer-bot` GitHub App — amends and re-signs Dependabot NuGet commits; credentials stored as Dependabot secrets (`MILKSHAKE_WRITER_BOT_CLIENT_ID`, `MILSHAKE_WRITER_BOT_APP_PRIVATE_KEY`)
 
 **Storage**: N/A
 
@@ -33,10 +34,11 @@ The solution is configuration-only: three GitHub Repository Rulesets enforce com
 
 **Constraints**:
 
-- Commits on `main` must retain original GPG signatures (FR-003b) — rules out rebase and squash merge strategies
+- Commits on `main` must be signed (FR-003b) — rules out rebase and squash merge strategies
 - Linear history required (FR-003a) — rules out merge commits
 - Mergify fast-forward is the only GitHub-compatible strategy satisfying both constraints simultaneously
-- `batch_size` in Mergify must be kept in sync with `open-pull-requests-limit` in Dependabot to avoid queue overflow
+- Dependabot NuGet commits are unsigned and use non-conventional commit messages; a fix workflow using a GitHub App resolves both before CI re-runs
+- Mergify queue branches are kept up to date via rebase (`update_method: rebase`) to avoid merge commits on the temporary queue branch
 
 **Scale/Scope**: Single repository; three package ecosystems (NuGet, npm, GitHub Actions)
 
@@ -71,13 +73,15 @@ specs/001-github-pr-merge/
 ### Source Files (repository root)
 
 ```text
-.mergify.yml                         — Mergify queue and PR routing rules
-CODEOWNERS                           — already exists at repo root; verify coverage is complete
+.mergify.yml                                    — Mergify queue and PR routing rules
+CODEOWNERS                                      — already exists at repo root; verify coverage is complete
 .github/
-└── dependabot.yml                   — Dependabot ecosystem schedules and limits
+├── dependabot.yml                              — Dependabot ecosystem schedules and limits
+└── workflows/
+    └── dependabot-nuget-fix.yml                — amends Dependabot NuGet commit messages and re-signs via GitHub App
 ```
 
-GitHub Repository Rulesets are configured via the GitHub UI or REST API and are not stored as files in the repository.
+GitHub Repository Rulesets are configured via the GitHub UI or REST API and are not stored as files in the repository. A dedicated ruleset requiring the `Mergify Merge Protections` status check is needed in addition to the CI Quality Gates, Security Scanning, Review Gates, and Commit Integrity rulesets. Merge Protections must also be enabled in the Mergify dashboard before the check appears on PRs.
 
 **Structure Decision**: Configuration-only; all changes are YAML files at the repository root or under `.github/`. No new source directories are needed.
 

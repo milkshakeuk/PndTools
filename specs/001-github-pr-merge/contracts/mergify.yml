@@ -10,8 +10,11 @@
 #   - "github-actions"
 # These labels MUST be declared in .github/dependabot.yml or the ecosystem queue routing will never fire.
 #
-# Dependabot auto-rebase is disabled in .github/dependabot.yml across all ecosystems. Without this,
-# Dependabot rewrites commit SHAs on rebase, dequeuing the PR from Mergify and forcing a full re-check.
+# Dependabot NuGet commits are amended by dependabot-nuget-fix.yml before CI runs. This workflow
+# replaces the commit via the GitHub REST API using a GitHub App token (milkshake-writer-bot),
+# which signs the new commit automatically. The App token is required for the ref update so that
+# the pull_request: synchronize event fires and re-triggers CI — github.token force pushes do not
+# fire this event.
 #
 # Automatic queueing is handled by pull_request_rules queue actions. Mergify evaluates each rule's
 # conditions and automatically queues the PR when they all pass — no manual @Mergifyio queue command
@@ -33,8 +36,8 @@
 # queued, until a codeowner approves. Minor/patch PRs are not subject to this protection and merge
 # automatically once CI passes.
 #
-# The batch_size value below is a recommended default.
-# It MUST be adjusted to match the open-pull-requests-limit in .github/dependabot.yml.
+# update_method: rebase on all queue rules keeps Mergify's temporary queue branch linear.
+# The default (merge) introduces merge commits which trigger dequeue via require_linear_history.
 #
 # max_checks_retries: controls how many times Mergify retries a failing CI check before
 # dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
@@ -72,6 +75,7 @@ queue_rules:
   # CI checks and approval are enforced by GitHub rulesets; no merge_conditions needed.
   - name: standard
     merge_method: fast-forward
+    update_method: rebase
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -84,10 +88,9 @@ queue_rules:
   # merge_protection until a codeowner approves.
   - name: nuget-deps
     merge_method: fast-forward
+    update_method: rebase
     branch_protection_injection_mode: none
     merge_bot_account: milkshakeuk
-    batch_size: 10                   # configurable; keep <= dependabot open-pull-requests-limit
-    batch_max_wait_time: 30 min
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -97,10 +100,9 @@ queue_rules:
   # Dependabot npm updates — all semver levels.
   - name: npm-deps
     merge_method: fast-forward
+    update_method: rebase
     branch_protection_injection_mode: none
     merge_bot_account: milkshakeuk
-    batch_size: 10
-    batch_max_wait_time: 30 min
     max_checks_retries: 3
     queue_conditions:
       - base = main
@@ -110,10 +112,9 @@ queue_rules:
   # Dependabot GitHub Actions updates — all semver levels.
   - name: actions-deps
     merge_method: fast-forward
+    update_method: rebase
     branch_protection_injection_mode: none
     merge_bot_account: milkshakeuk
-    batch_size: 10
-    batch_max_wait_time: 30 min
     max_checks_retries: 3
     queue_conditions:
       - base = main
