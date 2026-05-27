@@ -166,11 +166,3 @@ Skills are managed by [APM][apm]. Run `apm install` to deploy them after cloning
 [eslint-pkg-conventions]: https://eslint.org/docs/latest/contribute/package-json-conventions
 [ms-test-naming]: https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices#follow-test-naming-standards
 [prek]: https://prek.j178.dev
-
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-at [specs/001-github-pr-merge/plan.md][plan]
-<!-- SPECKIT END -->
-
-[plan]: specs/001-github-pr-merge/plan.md

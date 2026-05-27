@@ -18,7 +18,7 @@
 
 **Purpose**: Install tooling and gather the inputs needed before any configuration can be written
 
-- [ ] T001 Install the Mergify GitHub App on the repository via the GitHub Marketplace; confirm it appears under Settings → GitHub Apps with read/write access to contents, pull requests, and checks
+- [X] T001 Install the Mergify GitHub App on the repository via the GitHub Marketplace; confirm it appears under Settings → GitHub Apps with read/write access to contents, pull requests, and checks
 - [X] T002 [P] Audit `CODEOWNERS` at the repository root — verify every source path under `src/` is covered by at least one owner entry; add any missing entries
 - [X] T003 [P] Open `.github/workflows/` and record the exact job names used for the build and test steps — these are required as `check-success` values in `.mergify.yml` and as status check names in Ruleset 2
 
@@ -62,8 +62,8 @@
 **Independent Test**: Observe a live Dependabot minor or patch PR — after checks pass it should enqueue automatically and merge within 35 minutes without any human action (30-minute fill window plus merge execution time, per SC-002); each dependency update appears as its own commit on `main`
 
 - [X] T011 [P] [US2] Create `.github/dependabot.yml` with three ecosystem entries (`nuget`, `npm`, `github-actions`), each targeting `/`, scheduled weekly, `open-pull-requests-limit: 10`, and a `labels:` entry applying the ecosystem label (`nuget`, `npm`, `github-actions` respectively) — these labels are required for Mergify ecosystem queue routing and are not added by Dependabot by default
-- [X] T012 [US2] Add `nuget-deps`, `npm-deps`, and `actions-deps` batch queues to `.mergify.yml` — each with `merge_method: fast-forward`, `batch_size: 10`, `batch_max_wait_time: 30 min`, `max_checks_retries: 3`, and `queue_conditions` for `base = main`, `author = dependabot[bot]`, and the ecosystem label; no `merge_conditions` needed — CI checks are enforced by GitHub rulesets
-- [X] T013 [US2] Routing handled via `merge_protections` + `auto_merge_conditions: true` — Mergify automatically queues PRs into the matching ecosystem queue when all protections pass; no explicit `pull_request_rules` queue actions required
+- [X] T012 [US2] Add `nuget-deps`, `npm-deps`, and `actions-deps` queues to `.mergify.yml` — each with `merge_method: fast-forward`, `update_method: rebase`, `branch_protection_injection_mode: none`, `merge_bot_account: milkshakeuk`, `max_checks_retries: 3`, and `queue_conditions` for `base = main`, `author = dependabot[bot]`, and the ecosystem label; no batching — individual fast-forward merges per PR
+- [X] T013 [US2] Add explicit `pull_request_rules` queue actions for each Dependabot ecosystem — conditions include all required CI checks; added auto-update rule to keep Dependabot PR branches current with main via `update` action, preventing dequeue due to branch falling behind
 
 **Checkpoint**: US2 is fully functional — eligible Dependabot minor/patch PRs enqueue automatically into the correct ecosystem queue and batch-merge within the 30-minute window
 
@@ -82,18 +82,20 @@
 
 ---
 
-## Phase 6: User Story 4 — Dependabot Batch Merge (Priority: P4)
+## Phase 6: User Story 4 — Per-ecosystem Queue Isolation (Priority: P4)
 
-**Goal**: Multiple eligible Dependabot minor/patch PRs within the same ecosystem land on `main` in a single batch operation, each as its own commit, within the 30-minute fill window
+**Goal**: Confirm that a failing check in one ecosystem does not block merges in another
 
-**Independent Test**: With two or more Dependabot minor/patch PRs open in the same ecosystem and all checks passing, confirm they merge together in one batch operation; inspect `git log` to verify each dependency update is a separate commit; confirm a failing PR in one ecosystem does not affect a ready batch in another ecosystem
+**Note**: Batching was removed in favour of individual fast-forward merges per PR. Per-ecosystem isolation via separate queues is retained.
 
-- [ ] T015 [US4] Verify the batch fill window — trigger or wait for two or more eligible Dependabot PRs in the same ecosystem; confirm they are held until the 30-minute window elapses then merged together in a single Mergify batch operation
-- [ ] T016 [US4] Verify per-ecosystem isolation — confirm that a Dependabot PR with a failing check in one ecosystem does not prevent the `nuget-deps`, `npm-deps`, or `actions-deps` queue for a different ecosystem from proceeding
-- [ ] T016a [US4] Verify FR-009 batch summary — after a batch merge completes, confirm that Mergify records which PRs were included (via workflow run log or PR comment) in a form that satisfies FR-009
-- [ ] T016b [US4] Verify mixed semver label tiebreaker — confirm that a Dependabot PR carrying both `version-update:semver-major` and `version-update:semver-minor` labels is routed to the `standard` queue and requires codeowner approval, not auto-merged (FR-006)
+**Independent Test**: With a Dependabot PR failing CI in one ecosystem, confirm PRs in other ecosystems still queue and merge independently
 
-**Checkpoint**: US4 is fully functional — batching, fill window, size cap, and per-ecosystem isolation all behave as specified
+- [X] T015 [US4] Per-ecosystem isolation verified in practice — separate `nuget-deps`, `npm-deps`, and `actions-deps` queues confirmed independent during live testing
+- ~~T016 batch fill window~~ — removed; batching not implemented
+- ~~T016a FR-009 batch summary~~ — removed; batching not implemented
+- ~~T016b mixed semver tiebreaker~~ — not observed in practice; Dependabot applies a single semver label per PR
+
+**Checkpoint**: Per-ecosystem isolation confirmed
 
 ---
 
@@ -101,9 +103,9 @@
 
 **Purpose**: End-to-end validation, documentation accuracy, and housekeeping
 
-- [ ] T017 Run the full `specs/001-github-pr-merge/quickstart.md` end-to-end verification checklist — confirm all five verification steps pass against the live repository configuration
+- [X] T017 Run the full `specs/001-github-pr-merge/quickstart.md` end-to-end verification checklist — confirm all five verification steps pass against the live repository configuration
 - [X] T018 [P] Update `specs/001-github-pr-merge/contracts/mergify.yml` and `contracts/rulesets.md` if any conditions or check names required adjustment during implementation to reflect the final deployed configuration
-- [ ] T019 [P] Update the `<!-- SPECKIT START -->` block in `CLAUDE.md` to remove the plan reference once the feature branch is merged to `main`
+- [X] T019 [P] Update the `<!-- SPECKIT START -->` block in `CLAUDE.md` to remove the plan reference once the feature branch is merged to `main`
 
 ---
 
