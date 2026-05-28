@@ -16,7 +16,7 @@ PndTools validates PXML against the official OpenPandora XSD schema and a set of
 using PndTools.Validation;
 
 var xmlString = File.ReadAllText("/tmp/PXML.xml");
-IPxmlValidator validator = new PxmlValidator();
+var validator = new PxmlValidator();
 var result = validator.Validate(xmlString);
 
 if (!result.IsValid)

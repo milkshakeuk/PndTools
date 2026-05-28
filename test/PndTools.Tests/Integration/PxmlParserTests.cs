@@ -12,7 +12,8 @@ public class PxmlParserTests
         var xml = await File.ReadAllTextAsync("Integration/TestCase/validPxml.xml", TestContext.Current.CancellationToken);
 
         // Act
-        var pxml = new PxmlParser().Parse(xml);
+        var parser = new PxmlParser();
+        var pxml = parser.Parse(xml);
 
         // Assert
         Assert.Equal("packageId", pxml.Package.Id);
@@ -39,7 +40,8 @@ public class PxmlParserTests
         var xml = await File.ReadAllTextAsync("Integration/TestCase/validPreHf6Pxml.xml", TestContext.Current.CancellationToken);
 
         // Act
-        var pxml = new PxmlParser().Parse(xml);
+        var parser = new PxmlParser();
+        var pxml = parser.Parse(xml);
 
         // Assert
         var application = Assert.Single(pxml.Applications);

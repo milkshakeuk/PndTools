@@ -18,14 +18,16 @@ using PndTools.IO.Extensions;
 
 using var stream = File.OpenRead("game.pnd");
 var xmlString = stream.GetPxml();
-var pxml = new PxmlParser().Parse(xmlString);
+var parser = new PxmlParser();
+var pxml = parser.Parse(xmlString);
 ```
 
 ## Parse from a file
 
 ```csharp
 var xmlString = File.ReadAllText("/tmp/PXML.xml");
-var pxml = new PxmlParser().Parse(xmlString);
+var parser = new PxmlParser();
+var pxml = parser.Parse(xmlString);
 ```
 
 ## The Pxml model

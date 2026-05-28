@@ -58,7 +58,8 @@ using var stream = File.OpenRead("game.pnd");
 using var archive = PndArchive.Open(stream);
 
 var xmlString = stream.GetPxml();
-var pxml = new PxmlParser().Parse(xmlString);
+var parser = new PxmlParser();
+var pxml = parser.Parse(xmlString);
 
 var extracted = archive.ExtractPreviewPics(pxml, "/tmp/previews");
 

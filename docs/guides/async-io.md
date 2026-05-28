@@ -19,7 +19,8 @@ using PndTools.IO.Extensions;
 using var stream = File.OpenRead("game.pnd");
 
 var xmlString = await stream.GetPxmlAsync();
-var pxml = new PxmlParser().Parse(xmlString);
+var parser = new PxmlParser();
+var pxml = parser.Parse(xmlString);
 
 Console.WriteLine(pxml.Applications[0].Id);
 ```
@@ -71,7 +72,8 @@ using var stream = File.OpenRead("game.pnd");
 using var archive = PndArchive.Open(stream);
 
 var xmlString = await stream.GetPxmlAsync();
-var pxml = new PxmlParser().Parse(xmlString);
+var parser = new PxmlParser();
+var pxml = parser.Parse(xmlString);
 
 var extracted = await archive.ExtractPreviewPicsAsync(pxml, "/tmp/previews");
 
