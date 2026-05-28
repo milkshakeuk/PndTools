@@ -27,7 +27,7 @@ public static class PndStreamExtensions
 
         if (start == -1 || end == -1)
         {
-            throw new InvalidPndException("Pxml is missing or incomplete");
+            throw new PndArchiveException("Pxml is missing or incomplete");
         }
 
         end += PxmlEnd.Length;
@@ -42,7 +42,7 @@ public static class PndStreamExtensions
 
         if (start == -1 || end == -1)
         {
-            throw new InvalidPndException("Pxml is missing or incomplete");
+            throw new PndArchiveException("Pxml is missing or incomplete");
         }
 
         end += PxmlEndMemory.Length;
@@ -56,7 +56,7 @@ public static class PndStreamExtensions
 
         if (start == -1)
         {
-            throw new InvalidPndException("Icon is missing or incomplete");
+            throw new PndArchiveException("Icon is missing or incomplete");
         }
 
         return new Position(start, stream.Length);
@@ -69,7 +69,7 @@ public static class PndStreamExtensions
     /// <param name="stream">The PND file stream to read from.</param>
     /// <returns>The PXML as a UTF-8 string with an XML declaration prepended.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain valid PXML.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain valid PXML.</exception>
     public static string GetPxml(this Stream stream)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -93,7 +93,7 @@ public static class PndStreamExtensions
     /// <param name="stream">The PND file stream to read from.</param>
     /// <returns>The raw PNG bytes of the icon.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain an embedded icon.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain an embedded icon.</exception>
     public static byte[] GetIcon(this Stream stream)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -108,7 +108,7 @@ public static class PndStreamExtensions
     /// <param name="stream">The PND file stream to read from.</param>
     /// <param name="path">The destination file path.</param>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="path"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain valid PXML.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain valid PXML.</exception>
     public static void SavePxml(this Stream stream, string path)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -122,7 +122,7 @@ public static class PndStreamExtensions
     /// <param name="stream">The PND file stream to read from.</param>
     /// <param name="path">The destination file path.</param>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="path"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain an embedded icon.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain an embedded icon.</exception>
     public static void SaveIcon(this Stream stream, string path)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -138,7 +138,7 @@ public static class PndStreamExtensions
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The PXML as a UTF-8 string with an XML declaration prepended.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain valid PXML.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain valid PXML.</exception>
     public static async Task<string> GetPxmlAsync(this Stream stream, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -163,7 +163,7 @@ public static class PndStreamExtensions
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The raw PNG bytes of the icon.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain an embedded icon.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain an embedded icon.</exception>
     public static async Task<byte[]> GetIconAsync(this Stream stream, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -180,7 +180,7 @@ public static class PndStreamExtensions
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="path"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain valid PXML.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain valid PXML.</exception>
     public static async Task SavePxmlAsync(this Stream stream, string path, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -196,7 +196,7 @@ public static class PndStreamExtensions
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> or <paramref name="path"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException"><paramref name="stream"/> does not contain an embedded icon.</exception>
+    /// <exception cref="PndArchiveException"><paramref name="stream"/> does not contain an embedded icon.</exception>
     public static async Task SaveIconAsync(this Stream stream, string path, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(stream);
@@ -307,7 +307,7 @@ public static class PndStreamExtensions
 
         if (start == -1)
         {
-            throw new InvalidPndException("Icon is missing or incomplete");
+            throw new PndArchiveException("Icon is missing or incomplete");
         }
 
         return new Position(start, stream.Length);
@@ -316,21 +316,6 @@ public static class PndStreamExtensions
 
 internal readonly record struct Position(long Start, long End);
 
-/// <summary>
-/// The exception thrown when a PND file stream is missing required data, such as PXML or an
-/// embedded icon.
-/// </summary>
-public class InvalidPndException : Exception
-{
-    /// <inheritdoc/>
-    public InvalidPndException() { }
-    /// <inheritdoc/>
-    public InvalidPndException(string message) : base(message) { }
-    /// <inheritdoc/>
-    public InvalidPndException(string message, Exception inner) : base(message, inner) { }
-}
-
-/// <summary>The filesystem type embedded in a PND file.</summary>
 /// <summary>The filesystem format of the archive embedded in a PND file.</summary>
 public enum PndArchiveType
 {

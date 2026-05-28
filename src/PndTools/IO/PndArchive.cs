@@ -38,10 +38,12 @@ public sealed class PndArchive : IDisposable
     /// <param name="stream">The PND file stream to read from.</param>
     /// <returns>A <see cref="PndArchive"/> ready for use.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidPndException">The stream is not a recognised SquashFS or ISO 9660 archive.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="stream"/> is not positioned at its origin.</exception>
+    /// <exception cref="PndArchiveException">The stream is not a recognised SquashFS or ISO 9660 archive.</exception>
     public static PndArchive Open(Stream stream)
     {
         ArgumentNullException.ThrowIfNull(stream);
+        ArgumentOutOfRangeException.ThrowIfNotEqual(stream.Position, 0L, nameof(stream));
         var archiveType = stream.DetectArchiveType();
         return new PndArchive(CreateFileSystem(stream, archiveType), archiveType);
     }
@@ -327,6 +329,6 @@ public sealed class PndArchive : IDisposable
         {
             PndArchiveType.SquashFs => new SquashFileSystemReader(stream),
             PndArchiveType.Iso => new CDReader(stream, joliet: true),
-            _ => throw new InvalidPndException("Cannot open archive: file type is not SquashFS or ISO 9660.")
+            _ => throw new PndArchiveException("Cannot open archive: file type is not SquashFS or ISO 9660.")
         };
 }

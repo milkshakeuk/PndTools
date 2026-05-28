@@ -8,14 +8,15 @@ using PndTools.Xml.Extensions;
 namespace PndTools;
 
 /// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>
-public static class PxmlParser
+public sealed class PxmlParser : IPxmlParser
 {
-    /// <summary>Parses a PXML string into a <see cref="Pxml"/> object graph.</summary>
-    /// <param name="xml">The PXML string to parse.</param>
-    /// <returns>The parsed <see cref="Pxml"/>.</returns>
+    /// <inheritdoc/>
     /// <exception cref="System.Xml.XmlException"><paramref name="xml"/> is not valid XML.</exception>
-    public static Pxml Parse(string xml)
+    /// <exception cref="ArgumentNullException"><paramref name="xml"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="xml"/> is empty or whitespace.</exception>
+    public Pxml Parse(string xml)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(xml);
         var document = XDocument.Parse(xml, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
         var root = document.Root!;
 

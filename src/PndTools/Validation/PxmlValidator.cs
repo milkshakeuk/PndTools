@@ -12,7 +12,7 @@ namespace PndTools.Validation;
 /// Validates a PXML string against the OpenPandora schema and additional rules that cannot be
 /// expressed in XSD, such as FreeDesktop.org category/subcategory pairings and locale requirements.
 /// </summary>
-public class PxmlValidator
+public class PxmlValidator : IPxmlValidator
 {
     private const string SchemaNamespace = "http://openpandora.org/namespaces/PXML";
     private const string SchemaResourceName = "PndTools.Resource.schema.xsd";
