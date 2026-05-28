@@ -42,7 +42,9 @@ foreach (var path in files)
 - [Validating PXML][validation] — validate metadata against the schema and business rules
 - [Searching streams][stream-extensions] — search any seekable stream for a byte pattern
 - [Using async and await][async-io] — use the async API in ASP.NET Core, background services, and other async contexts
+- [ASP.NET Core integration][aspnetcore] — register all PndTools services with a single call and inject them into controllers and minimal API handlers
 
+[aspnetcore]: /guides/aspnetcore
 [async-io]: /guides/async-io
 [extracting-files]: /guides/extracting-files
 [openpandora]: https://openpandora.org

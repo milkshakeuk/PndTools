@@ -6,7 +6,9 @@ sidebar:
 editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/parsing-pxml.md'
 ---
 
-`PxmlParser.Parse` converts a PXML document into a `Pxml` record containing strongly-typed .NET objects. You can obtain the XML string from a PND stream using `GetPxml`, or load it from a file. The [PXML specification][pxml-spec] documents the full XML format.
+`PxmlParser` converts a PXML document into a `Pxml` record containing strongly-typed .NET objects. You can obtain the XML string from a PND stream using `GetPxml`, or load it from a file. The [PXML specification][pxml-spec] documents the full XML format.
+
+`PxmlParser` is an instantiatable class implementing `IPxmlParser` — create an instance directly, or inject it via DI in ASP.NET Core projects (see [ASP.NET Core integration][aspnetcore]).
 
 ## Parse from a PND stream
 
@@ -16,14 +18,14 @@ using PndTools.IO.Extensions;
 
 using var stream = File.OpenRead("game.pnd");
 var xmlString = stream.GetPxml();
-var pxml = PxmlParser.Parse(xmlString);
+var pxml = new PxmlParser().Parse(xmlString);
 ```
 
 ## Parse from a file
 
 ```csharp
 var xmlString = File.ReadAllText("/tmp/PXML.xml");
-var pxml = PxmlParser.Parse(xmlString);
+var pxml = new PxmlParser().Parse(xmlString);
 ```
 
 ## The Pxml model
@@ -110,6 +112,7 @@ foreach (var pic in app.PreviewPics)
 }
 ```
 
+[aspnetcore]: /guides/aspnetcore
 [extracting-files]: /guides/extracting-files
 [freedesktop]: https://specifications.freedesktop.org/menu-spec/latest/
 [pxml-spec]: https://pandorawiki.org/PXML_specification

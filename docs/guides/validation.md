@@ -8,13 +8,15 @@ editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/valida
 
 PndTools provides two layers of validation: schema validation against the official PXML XSD, and a set of additional rules that the schema cannot express.
 
+`PxmlValidator` implements `IPxmlValidator` — use it directly, or inject it via DI in ASP.NET Core projects (see [ASP.NET Core integration][aspnetcore]).
+
 ## Schema validation
 
 ```csharp
 using PndTools.Validation;
 
 var xmlString = File.ReadAllText("/tmp/PXML.xml");
-var validator = new PxmlValidator();
+IPxmlValidator validator = new PxmlValidator();
 var result = validator.Validate(xmlString);
 
 if (!result.IsValid)
@@ -50,3 +52,5 @@ foreach (var error in result.Errors)
     Console.WriteLine(error);
 }
 ```
+
+[aspnetcore]: /guides/aspnetcore
