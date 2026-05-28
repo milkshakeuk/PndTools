@@ -10,7 +10,7 @@ namespace PndTools.Validation.Extensions;
 /// Validation rules for PXML that cannot be expressed in XSD, such as locale requirements
 /// and FreeDesktop.org category/subcategory pairings.
 /// </summary>
-public static class NonSchemaEnforcableValidationExtensions
+public static class NonSchemaEnforceableValidationExtensions
 {
     /// <summary>
     /// Validates that at least one element in <paramref name="elements"/> has a <c>lang</c>

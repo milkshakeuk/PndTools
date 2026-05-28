@@ -28,7 +28,7 @@ if (!result.IsValid)
 
 ## Additional rules
 
-The schema cannot enforce constraints such as duplicate application IDs or malformed category combinations. `NonSchemaEnforcableValidationExtensions` adds these checks on top of a valid document.
+The schema cannot enforce constraints such as duplicate application IDs or malformed category combinations. `NonSchemaEnforceableValidationExtensions` adds these checks on top of a valid document.
 
 ```csharp
 var result = validator.Validate(xmlString)

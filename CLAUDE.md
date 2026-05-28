@@ -23,7 +23,7 @@ src/PndTools/
     PndArchive.cs — disposable archive reader (SquashFS + ISO)
   Models/         — Pxml records, PndToolsJsonContext
   Validation/
-    Extensions/   — NonSchemaEnforcableValidationExtensions
+    Extensions/   — NonSchemaEnforceableValidationExtensions
     PxmlValidator.cs, ValidationResult.cs
   Xml/Extensions/ — XElementExtensions, TypeParsingExtensions
   ArgumentCollectionException.cs
@@ -94,6 +94,8 @@ private static ReadOnlyMemory<byte> PxmlStartMemory => "<PXML"u8.ToArray();
 **Benchmarks**: for performance-sensitive features, add or update a class in `test/PndTools.Benchmarks/` using `[MemoryDiagnoser]` + `[MarkdownExporterAttribute.GitHub]`.
 
 **JSON serialisation** uses `PndToolsJsonContext` (AOT-safe source generation, camelCase).
+
+**Extension method classes** follow the `*Extensions` naming convention. The class name is not part of the effective public API — extension methods are almost always called with member syntax (`elements.ValidateCategorySubcategoryPairing(errors)`) rather than as static calls (`NonSchemaEnforceableValidationExtensions.ValidateCategorySubcategoryPairing(elements, errors)`). Renaming an extension method class is therefore a low-risk change; treat it as `refactor` rather than a breaking change unless there is evidence of static call site usage.
 
 ## Verification
 
