@@ -89,7 +89,7 @@ public class ServiceCollectionExtensionsTests
         services.AddPndTools();
 
         // Assert
-        var provider = services.BuildServiceProvider();
+        using var provider = services.BuildServiceProvider();
         var resolved = provider.GetRequiredService<IPxmlParser>();
         Assert.Same(customParser, resolved);
     }

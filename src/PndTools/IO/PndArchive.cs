@@ -39,6 +39,7 @@ public sealed class PndArchive : IDisposable
     /// <returns>A <see cref="PndArchive"/> ready for use.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="stream"/> is not positioned at its origin.</exception>
+    /// <exception cref="NotSupportedException"><paramref name="stream"/> is not seekable.</exception>
     /// <exception cref="PndArchiveException">The stream is not a recognised SquashFS or ISO 9660 archive.</exception>
     public static PndArchive Open(Stream stream)
     {

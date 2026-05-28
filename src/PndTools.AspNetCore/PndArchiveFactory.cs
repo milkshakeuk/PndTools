@@ -12,14 +12,20 @@ public sealed class PndArchiveFactory : IPndArchiveFactory
     public PndArchive Open(Stream stream) => PndArchive.Open(stream);
 
     /// <inheritdoc/>
-    public bool TryOpen(Stream stream, out PndArchive? archive)
+    public bool TryOpen(Stream? stream, out PndArchive? archive)
     {
+        if (stream is null)
+        {
+            archive = null;
+            return false;
+        }
+
         try
         {
             archive = PndArchive.Open(stream);
             return true;
         }
-        catch (Exception ex) when (ex is PndArchiveException or ArgumentOutOfRangeException or ArgumentNullException)
+        catch (Exception ex) when (ex is PndArchiveException or ArgumentOutOfRangeException or NotSupportedException)
         {
             archive = null;
             return false;

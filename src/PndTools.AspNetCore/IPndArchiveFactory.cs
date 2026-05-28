@@ -10,8 +10,9 @@ namespace PndTools.AspNetCore;
 /// </summary>
 /// <remarks>
 /// The caller retains ownership of both the stream and the returned archive — the factory
-/// does not dispose either. Both methods require the stream to be positioned at its origin
-/// (<c>Position == 0</c>); neither the factory nor <see cref="PndArchive.Open"/> seeks.
+/// does not dispose either. Both methods require a seekable stream positioned at its origin
+/// (<c>Position == 0</c>); <see cref="PndArchive.Open"/> reads and sets <c>Stream.Position</c>
+/// during archive-type detection and will throw <see cref="NotSupportedException"/> on non-seekable streams.
 /// </remarks>
 public interface IPndArchiveFactory
 {
@@ -23,13 +24,14 @@ public interface IPndArchiveFactory
     /// <returns>A <see cref="PndArchive"/> ready for use.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="stream"/> is not positioned at its origin.</exception>
+    /// <exception cref="NotSupportedException"><paramref name="stream"/> is not seekable.</exception>
     /// <exception cref="PndArchiveException">The stream is not a recognised PND archive.</exception>
     PndArchive Open(Stream stream);
 
     /// <summary>
     /// Attempts to open a <see cref="PndArchive"/> from <paramref name="stream"/>.
-    /// Returns <c>false</c> without throwing if the stream is <c>null</c>, not at its origin,
-    /// or not a recognised PND archive.
+    /// Returns <c>false</c> without throwing if the stream is <c>null</c>, not seekable,
+    /// not at its origin, or not a recognised PND archive.
     /// </summary>
     /// <param name="stream">The stream to read from, positioned at its origin.</param>
     /// <param name="archive">
@@ -39,5 +41,5 @@ public interface IPndArchiveFactory
     /// <returns>
     /// <c>true</c> if the archive was opened successfully; <c>false</c> otherwise.
     /// </returns>
-    bool TryOpen(Stream stream, out PndArchive? archive);
+    bool TryOpen(Stream? stream, out PndArchive? archive);
 }

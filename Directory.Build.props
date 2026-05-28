@@ -4,7 +4,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisMode>Recommended</AnalysisMode>
-    <!-- Required for IDE0005 (unnecessary usings) to surface at build time -->
+    <!-- Roslyn limitation: IDE0005 (unnecessary usings) only triggers at build time when XML doc generation is enabled (dotnet/roslyn#41640) -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
