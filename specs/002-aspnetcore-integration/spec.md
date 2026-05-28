@@ -20,7 +20,7 @@
 - Q: Should `IPndArchiveFactory` expose an `OpenAsync` method? → A: No. Although `DetectArchiveTypeAsync` exists, `CreateFileSystem` passes the stream directly to `SquashFileSystemReader` or `CDReader` which have no async constructors — so filesystem initialisation is inherently synchronous. An `OpenAsync` would be partially async at best and misleading about what work is actually deferred. The factory exposes `Open(Stream)` only.
 - Q: What lifetimes should the registered services use, given concurrent upload scenarios? → A: Singleton for all three.
 - Q: Should `IPndArchiveFactory` expose a non-throwing path for invalid archives, given user uploads are a common failure case? → A: Yes — expose both `Open(Stream)` (throws `PndArchiveException`) and `TryOpen(Stream, out PndArchive?)` (returns `false` without throwing), following the .NET BCL `Parse`/`TryParse` convention.
-- Q: Should the factory seek the stream to position zero before reading, or require the caller to do so? → A: Precondition — both `Open` and `TryOpen` require the stream to be positioned at its origin. The factory does not seek. Auto-seeking would be a hidden side effect that silently resets caller-controlled stream position and behaves inconsistently for non-seekable streams. An unpositioned stream is treated as invalid input: `TryOpen` returns `false`, `Open` throws. `PxmlParser` is stateless; `PxmlValidator` holds a read-only `XmlSchemaSet` after construction (thread-safe); `IPndArchiveFactory` has no state. Singleton is safe and avoids repeated schema compilation cost. Implementations MUST be thread-safe to honour this contract.
+- Q: Should the factory seek the stream to position zero before reading, or require the caller to do so? → A: Precondition — both `Open` and `TryOpen` require the stream to be positioned at its origin. The factory does not seek. Auto-seeking would be a hidden side effect that silently resets caller-controlled stream position and behaves inconsistently for non-seekable streams. An unpositioned stream is treated as invalid input: `TryOpen` returns `false`, `Open` throws `ArgumentOutOfRangeException` (enforced by `PndArchive.Open`).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -79,7 +79,10 @@ A developer writing a controller action or a minimal API endpoint wants to recei
 
 ### Key Entities
 
-- **PndTools options**: The set of configurable values governing PndTools behaviour within the host application (e.g. default file paths, validation settings). Bound via the options pattern; has sensible defaults for all fields.
+- **IPxmlParser**: Interface in `PndTools` describing the ability to parse a PXML string into a `Pxml` object graph. Implemented by `PxmlParser`.
+- **IPxmlValidator**: Interface in `PndTools.Validation` describing the ability to validate a PXML string against the OpenPandora schema and non-schema rules. Implemented by `PxmlValidator`.
+- **IPndArchiveFactory**: Interface in `PndTools.AspNetCore` for obtaining a `PndArchive` from a caller-owned stream. Implemented by `PndArchiveFactory`. Exposes `Open(Stream)` (throws on failure) and `TryOpen(Stream, out PndArchive?)` (returns false on failure).
+- **PndArchive**: Existing disposable type in `PndTools.IO` that provides read access to a PND archive filesystem. Created by the factory; owned and disposed by the caller.
 
 ## Success Criteria *(mandatory)*
 

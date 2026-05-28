@@ -88,8 +88,8 @@ PndTools.AspNetCore (companion)
 ## Exception hierarchy (core library)
 
 ```text
-PndException  (base)
+PndException  (abstract base — create if not already present)
 ├── PndArchiveException   (renamed from InvalidPndException — invalid/unrecognised archive)
-├── PndParseException     (PXML parse failures)
-└── PndValidationException  (validation rule failures)
+├── PndParseException     (PXML parse failures — future)
+└── PndValidationException  (validation rule failures — future)
 ```
