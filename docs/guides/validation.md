@@ -6,11 +6,11 @@ sidebar:
 editUrl: 'https://github.com/milkshakeuk/PndTools/edit/master/docs/guides/validation.md'
 ---
 
-PndTools provides two layers of validation: schema validation against the official PXML XSD, and a set of additional rules that the schema cannot express.
+PndTools validates PXML against the official OpenPandora XSD schema and a set of additional rules that the schema cannot express, such as locale requirements and FreeDesktop.org category/subcategory pairings. Both layers run in a single `Validate` call.
 
 `PxmlValidator` implements `IPxmlValidator` — use it directly, or inject it via DI in ASP.NET Core projects (see [ASP.NET Core integration][aspnetcore]).
 
-## Schema validation
+## Validate a PXML string
 
 ```csharp
 using PndTools.Validation;
@@ -28,29 +28,11 @@ if (!result.IsValid)
 }
 ```
 
-## Additional rules
+## ValidationResult
 
-The schema cannot enforce constraints such as duplicate application IDs or malformed category combinations. `NonSchemaEnforceableValidationExtensions` adds these checks on top of a valid document.
+`ValidationResult` exposes two members:
 
-```csharp
-var result = validator.Validate(xmlString)
-    .ValidateNonSchemaRules();
-
-Console.WriteLine(result.IsValid);
-```
-
-## Combining results
-
-Both validation steps return a `ValidationResult`, which can be chained:
-
-```csharp
-var result = validator.Validate(xmlString)
-    .ValidateNonSchemaRules();
-
-foreach (var error in result.Errors)
-{
-    Console.WriteLine(error);
-}
-```
+- `IsValid` — `true` when there are no errors
+- `Errors` — a read-only list of error message strings
 
 [aspnetcore]: /guides/aspnetcore

@@ -33,7 +33,7 @@ using PndTools.IO.Extensions;
 
 using var stream = File.OpenRead("game.pnd");
 var xmlString = stream.GetPxml();
-var pxml = PxmlParser.Parse(xmlString);
+var pxml = new PxmlParser().Parse(xmlString);
 
 Console.WriteLine(pxml.Applications[0].Id);
 ```
