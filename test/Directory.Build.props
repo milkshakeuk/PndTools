@@ -1,0 +1,8 @@
+<Project>
+
+  <!-- Test and benchmark projects do not need XML documentation on public members -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -16,5 +16,5 @@ public class PxmlParserBenchmarks
         _pxmlString = File.ReadAllText("TestCase/validPxml.xml");
 
     [Benchmark]
-    public void Parse() => PxmlParser.Parse(_pxmlString);
+    public void Parse() => new PxmlParser().Parse(_pxmlString);
 }

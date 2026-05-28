@@ -30,6 +30,9 @@ end_of_line = crlf
 # File header
 file_header_template = Copyright (c) milkshakeuk. All rights reserved.\nSPDX-License-Identifier: MIT
 
+# Unnecessary using directives are a warning so TreatWarningsAsErrors catches them
+dotnet_diagnostic.IDE0005.severity = warning
+
 # New line preferences
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true

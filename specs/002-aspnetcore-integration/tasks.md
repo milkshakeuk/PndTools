@@ -19,9 +19,9 @@ every new public method must be accompanied by tests in the same commit).
 
 **Purpose**: Create new projects and wire them into the solution before any implementation begins
 
-- [ ] T001 Create `src/PndTools.AspNetCore/PndTools.AspNetCore.csproj` — `net10.0`, `Nullable enable`, `TreatWarningsAsErrors true`, `EnforceCodeStyleInBuild true`, `AnalysisMode Recommended`; reference `PndTools` and `Microsoft.Extensions.DependencyInjection.Abstractions`; the `ProjectReference` to `PndTools` is the enforcement mechanism for the edge case "companion installed without core" — NuGet will require the core package as a transitive dependency
-- [ ] T002 [P] Create `test/PndTools.AspNetCore.Tests/PndTools.AspNetCore.Tests.csproj` — `net10.0`, xUnit v3, `AnalysisMode All`; reference `PndTools.AspNetCore` and test infrastructure matching `PndTools.Tests`
-- [ ] T003 [P] Add both new projects to the solution file (`PndTools.sln`) and verify `dotnet build` succeeds with empty projects
+- [x] T001 Create `src/PndTools.AspNetCore/PndTools.AspNetCore.csproj` — `net10.0`, `Nullable enable`, `TreatWarningsAsErrors true`, `EnforceCodeStyleInBuild true`, `AnalysisMode Recommended`; reference `PndTools` and `Microsoft.Extensions.DependencyInjection.Abstractions`; the `ProjectReference` to `PndTools` is the enforcement mechanism for the edge case "companion installed without core" — NuGet will require the core package as a transitive dependency
+- [x] T002 [P] Create `test/PndTools.AspNetCore.Tests/PndTools.AspNetCore.Tests.csproj` — `net10.0`, xUnit v3, `AnalysisMode All`; reference `PndTools.AspNetCore` and test infrastructure matching `PndTools.Tests`
+- [x] T003 [P] Add both new projects to the solution file (`PndTools.sln`) and verify `dotnet build` succeeds with empty projects
 
 **Checkpoint**: Solution builds with the two new empty projects — no implementation yet
 
@@ -34,14 +34,14 @@ position guard to `PndArchive.Open`. The companion package depends on all of the
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Rename `InvalidPndException` → `PndArchiveException` throughout the core library — verify `PndException` base class exists in `src/PndTools/` (create it if not, as `public abstract class PndException : Exception`); update `PndArchiveException` to inherit from `PndException`; update the class declaration in `src/PndTools/IO/Extensions/PndStreamExtensions.cs`, all `throw` sites, all XML doc `<exception>` references, and any usages in `test/PndTools.Tests/`
-- [ ] T005 [P] Add `IPxmlParser` interface to `src/PndTools/IPxmlParser.cs` — single method `Pxml Parse(string xml)` with full XML doc comments; place in `PndTools` namespace
-- [ ] T006 [P] Add `IPxmlValidator` interface to `src/PndTools/Validation/IPxmlValidator.cs` — single method `ValidationResult Validate(string input)` with full XML doc comments; place in `PndTools.Validation` namespace
-- [ ] T007 [P] Add stream position guard to `PndArchive.Open` in `src/PndTools/IO/PndArchive.cs` — throw `ArgumentOutOfRangeException` when `stream.Position != 0`; update XML doc to document the new exception
-- [ ] T008 Refactor `PxmlParser` in `src/PndTools/PxmlParser.cs` — change from `static` class to `sealed` instance class implementing `IPxmlParser`; all private helpers remain `static`; instance `Parse` method delegates to existing logic; depends on T005
-- [ ] T009 [P] Add `: IPxmlValidator` to `PxmlValidator` class declaration in `src/PndTools/Validation/PxmlValidator.cs`; depends on T006
-- [ ] T010 Update `test/PndTools.Tests/Integration/PxmlParserTests.cs` — replace static `PxmlParser.Parse(...)` call sites with instance-based `new PxmlParser().Parse(...)`; depends on T008
-- [ ] T011 [P] Add tests for the stream position guard in `test/PndTools.Tests/Integration/IO/PndArchiveTests.cs` — `Open_StreamNotAtOrigin_ThrowsArgumentOutOfRangeException`; depends on T007
+- [x] T004 [P] Rename `InvalidPndException` → `PndArchiveException` throughout the core library — verify `PndException` base class exists in `src/PndTools/` (create it if not, as `public abstract class PndException : Exception`); update `PndArchiveException` to inherit from `PndException`; update the class declaration in `src/PndTools/IO/Extensions/PndStreamExtensions.cs`, all `throw` sites, all XML doc `<exception>` references, and any usages in `test/PndTools.Tests/`
+- [x] T005 [P] Add `IPxmlParser` interface to `src/PndTools/IPxmlParser.cs` — single method `Pxml Parse(string xml)` with full XML doc comments; place in `PndTools` namespace
+- [x] T006 [P] Add `IPxmlValidator` interface to `src/PndTools/Validation/IPxmlValidator.cs` — single method `ValidationResult Validate(string input)` with full XML doc comments; place in `PndTools.Validation` namespace
+- [x] T007 [P] Add stream position guard to `PndArchive.Open` in `src/PndTools/IO/PndArchive.cs` — throw `ArgumentOutOfRangeException` when `stream.Position != 0`; update XML doc to document the new exception
+- [x] T008 Refactor `PxmlParser` in `src/PndTools/PxmlParser.cs` — change from `static` class to `sealed` instance class implementing `IPxmlParser`; all private helpers remain `static`; instance `Parse` method delegates to existing logic; depends on T005
+- [x] T009 [P] Add `: IPxmlValidator` to `PxmlValidator` class declaration in `src/PndTools/Validation/PxmlValidator.cs`; depends on T006
+- [x] T010 Update `test/PndTools.Tests/Integration/PxmlParserTests.cs` — replace static `PxmlParser.Parse(...)` call sites with instance-based `new PxmlParser().Parse(...)`; depends on T008
+- [x] T011 [P] Add tests for the stream position guard in `test/PndTools.Tests/Integration/IO/PndArchiveTests.cs` — `Open_StreamNotAtOrigin_ThrowsArgumentOutOfRangeException`; depends on T007
 
 **Checkpoint**: `dotnet build` produces zero warnings; `dotnet test` (core project only) all green
 
@@ -56,11 +56,11 @@ the container with no additional configuration
 and resolve `IPxmlParser`, `IPxmlValidator`, and `IPndArchiveFactory` — all resolve without error.
 Call `AddPndTools()` a second time and confirm no duplicate registrations.
 
-- [ ] T012 [P] [US1] Add `IPndArchiveFactory` interface to `src/PndTools.AspNetCore/IPndArchiveFactory.cs` — `Open(Stream)` and `TryOpen(Stream, out PndArchive?)` with full XML doc comments per `contracts/interfaces.md`; place in `PndTools.AspNetCore` namespace
-- [ ] T013 [US1] Implement `PndArchiveFactory` in `src/PndTools.AspNetCore/PndArchiveFactory.cs` — sealed class implementing `IPndArchiveFactory`; `Open` delegates to `PndArchive.Open`; `TryOpen` wraps in try/catch over `PndArchiveException`, `ArgumentOutOfRangeException`, and `ArgumentNullException`; depends on T012
-- [ ] T014 [US1] Implement `PndToolsServiceCollectionExtensions.AddPndTools()` in `src/PndTools.AspNetCore/DependencyInjection/PndToolsServiceCollectionExtensions.cs` — place in `Microsoft.Extensions.DependencyInjection` namespace; use `TryAddSingleton` for all three services; return `IServiceCollection` for chaining; XML doc per `contracts/interfaces.md`; depends on T012, T013
-- [ ] T015 [US1] Add `ServiceCollectionExtensionsTests` in `test/PndTools.AspNetCore.Tests/ServiceCollectionExtensionsTests.cs` — `AddPndTools_RegistersIPxmlParser_AsSingleton`, `AddPndTools_RegistersIPxmlValidator_AsSingleton`, `AddPndTools_RegistersIPndArchiveFactory_AsSingleton`, `AddPndTools_CalledTwice_DoesNotDuplicateRegistrations`, `AddPndTools_NullServices_ThrowsArgumentNullException`, `AddPndTools_WhenIPxmlParserAlreadyRegistered_DoesNotOverrideExistingRegistration`; depends on T014
-- [ ] T016 [P] [US1] Add `PndArchiveFactoryTests` in `test/PndTools.AspNetCore.Tests/PndArchiveFactoryTests.cs` — `Open_ValidStream_ReturnsPndArchive`, `Open_NullStream_ThrowsArgumentNullException`, `Open_StreamNotAtOrigin_ThrowsArgumentOutOfRangeException`, `Open_InvalidStream_ThrowsPndArchiveException`, `TryOpen_ValidStream_ReturnsTrueAndArchive`, `TryOpen_NullStream_ReturnsFalse`, `TryOpen_StreamNotAtOrigin_ReturnsFalse`, `TryOpen_InvalidStream_ReturnsFalse`; depends on T013
+- [x] T012 [P] [US1] Add `IPndArchiveFactory` interface to `src/PndTools.AspNetCore/IPndArchiveFactory.cs` — `Open(Stream)` and `TryOpen(Stream, out PndArchive?)` with full XML doc comments per `contracts/interfaces.md`; place in `PndTools.AspNetCore` namespace
+- [x] T013 [US1] Implement `PndArchiveFactory` in `src/PndTools.AspNetCore/PndArchiveFactory.cs` — sealed class implementing `IPndArchiveFactory`; `Open` delegates to `PndArchive.Open`; `TryOpen` wraps in try/catch over `PndArchiveException`, `ArgumentOutOfRangeException`, and `ArgumentNullException`; depends on T012
+- [x] T014 [US1] Implement `PndToolsServiceCollectionExtensions.AddPndTools()` in `src/PndTools.AspNetCore/DependencyInjection/PndToolsServiceCollectionExtensions.cs` — place in `Microsoft.Extensions.DependencyInjection` namespace; use `TryAddSingleton` for all three services; return `IServiceCollection` for chaining; XML doc per `contracts/interfaces.md`; depends on T012, T013
+- [x] T015 [US1] Add `ServiceCollectionExtensionsTests` in `test/PndTools.AspNetCore.Tests/ServiceCollectionExtensionsTests.cs` — `AddPndTools_RegistersIPxmlParser_AsSingleton`, `AddPndTools_RegistersIPxmlValidator_AsSingleton`, `AddPndTools_RegistersIPndArchiveFactory_AsSingleton`, `AddPndTools_CalledTwice_DoesNotDuplicateRegistrations`, `AddPndTools_NullServices_ThrowsArgumentNullException`, `AddPndTools_WhenIPxmlParserAlreadyRegistered_DoesNotOverrideExistingRegistration`; depends on T014
+- [x] T016 [P] [US1] Add `PndArchiveFactoryTests` in `test/PndTools.AspNetCore.Tests/PndArchiveFactoryTests.cs` — `Open_ValidStream_ReturnsPndArchive`, `Open_NullStream_ThrowsArgumentNullException`, `Open_StreamNotAtOrigin_ThrowsArgumentOutOfRangeException`, `Open_InvalidStream_ThrowsPndArchiveException`, `TryOpen_ValidStream_ReturnsTrueAndArchive`, `TryOpen_NullStream_ReturnsFalse`, `TryOpen_StreamNotAtOrigin_ReturnsFalse`, `TryOpen_InvalidStream_ReturnsFalse`; depends on T013
 
 **Checkpoint**: US1 fully functional — `AddPndTools()` registers all services; all US1 tests green
 
@@ -75,7 +75,7 @@ controller and minimal API composition patterns — no additional setup beyond `
 `IPxmlParser` via constructor injection and as a parameter in a minimal API handler; confirm both
 return a functional instance that produces correct output on a known PXML input.
 
-- [ ] T017 [US2] Add `HostedInjectionTests` in `test/PndTools.AspNetCore.Tests/HostedInjectionTests.cs` — use `WebApplicationFactory` or `Host.CreateDefaultBuilder` + `AddPndTools()`; verify `IPxmlParser` resolves and parses a known PXML fixture; verify `IPxmlValidator` resolves and validates the same fixture; verify `IPndArchiveFactory` resolves as a Singleton (same instance across two resolutions); depends on T014
+- [x] T017 [US2] Add `HostedInjectionTests` in `test/PndTools.AspNetCore.Tests/HostedInjectionTests.cs` — use `WebApplicationFactory` or `Host.CreateDefaultBuilder` + `AddPndTools()`; verify `IPxmlParser` resolves and parses a known PXML fixture; verify `IPxmlValidator` resolves and validates the same fixture; verify `IPndArchiveFactory` resolves as a Singleton (same instance across two resolutions); depends on T014
 
 **Checkpoint**: US2 fully functional — both composition patterns verified; all tests green
 
@@ -85,11 +85,11 @@ return a functional instance that produces correct output on a known PXML input.
 
 **Purpose**: Documentation updates for all public API changes and the new package
 
-- [ ] T018 [P] Update `docs/getting-started.md` — note that `PxmlParser` is now an instantiatable class and link to the new ASP.NET Core guide
-- [ ] T019 [P] Update `docs/guides/parsing-pxml.md` — replace static `PxmlParser.Parse(...)` examples with instance-based usage
-- [ ] T020 [P] Update `docs/guides/validation.md` — add `IPxmlValidator` interface reference alongside the existing `PxmlValidator` examples
-- [ ] T021 [P] Add `docs/guides/aspnetcore.md` — cover `AddPndTools()` registration, constructor injection, minimal API injection, `IPndArchiveFactory.Open` and `TryOpen` patterns, and stream position contract; content derived from `specs/002-aspnetcore-integration/quickstart.md`
-- [ ] T022 Run `dotnet format && dotnet build && dotnet test` — verify zero warnings, zero style violations, all tests pass across both library projects and both test projects; manually confirm `AddPndTools()` startup overhead is negligible by comparing application startup time with and without the call (SC-003 — three `TryAddSingleton` calls have no measurable impact)
+- [x] T018 [P] Update `docs/getting-started.md` — note that `PxmlParser` is now an instantiatable class and link to the new ASP.NET Core guide
+- [x] T019 [P] Update `docs/guides/parsing-pxml.md` — replace static `PxmlParser.Parse(...)` examples with instance-based usage
+- [x] T020 [P] Update `docs/guides/validation.md` — add `IPxmlValidator` interface reference alongside the existing `PxmlValidator` examples
+- [x] T021 [P] Add `docs/guides/aspnetcore.md` — cover `AddPndTools()` registration, constructor injection, minimal API injection, `IPndArchiveFactory.Open` and `TryOpen` patterns, and stream position contract; content derived from `specs/002-aspnetcore-integration/quickstart.md`
+- [x] T022 Run `dotnet format && dotnet build && dotnet test` — verify zero warnings, zero style violations, all tests pass across both library projects and both test projects; manually confirm `AddPndTools()` startup overhead is negligible by comparing application startup time with and without the call (SC-003 — three `TryAddSingleton` calls have no measurable impact)
 
 ---
 

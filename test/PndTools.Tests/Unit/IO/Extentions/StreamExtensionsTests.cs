@@ -1,7 +1,6 @@
 // Copyright (c) milkshakeuk. All rights reserved.
 // SPDX-License-Identifier: MIT
 
-using System.IO;
 using PndTools.IO.Extensions;
 using PndTools.Tests.Helpers;
 

@@ -1,7 +1,7 @@
 // Copyright (c) milkshakeuk. All rights reserved.
 // SPDX-License-Identifier: MIT
 
-using System.IO;
+using PndTools.IO;
 using PndTools.IO.Extensions;
 using PndTools.Tests.Helpers;
 
@@ -94,14 +94,14 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void GetPxml_PxmlNotInArchive_ThrowsInvalidPndException()
+    public void GetPxml_PxmlNotInArchive_ThrowsPndArchiveException()
     {
         // Arrange
         using Stream stream = StreamTestHelper.GenerateRandomStream();
 
         // Act
         // Assert
-        Assert.Throws<InvalidPndException>(() => stream.GetPxml());
+        Assert.Throws<PndArchiveException>(() => stream.GetPxml());
     }
 
     [Fact]
@@ -114,14 +114,14 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public void GetIcon_IconNotInArchive_ThrowsInvalidPndException()
+    public void GetIcon_IconNotInArchive_ThrowsPndArchiveException()
     {
         // Arrange
         using Stream stream = StreamTestHelper.GenerateRandomStream();
 
         // Act
         // Assert
-        Assert.Throws<InvalidPndException>(() => stream.GetIcon());
+        Assert.Throws<PndArchiveException>(() => stream.GetIcon());
     }
 
     [Fact]
@@ -247,14 +247,14 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public async Task GetPxmlAsync_PxmlNotInStream_ThrowsInvalidPndException()
+    public async Task GetPxmlAsync_PxmlNotInStream_ThrowsPndArchiveException()
     {
         // Arrange
         using Stream stream = StreamTestHelper.GenerateRandomStream();
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<InvalidPndException>(() => stream.GetPxmlAsync(TestContext.Current.CancellationToken));
+        await Assert.ThrowsAsync<PndArchiveException>(() => stream.GetPxmlAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -282,14 +282,14 @@ public class PndStreamExtensionsTests
     }
 
     [Fact]
-    public async Task GetIconAsync_IconNotInStream_ThrowsInvalidPndException()
+    public async Task GetIconAsync_IconNotInStream_ThrowsPndArchiveException()
     {
         // Arrange
         using Stream stream = StreamTestHelper.GenerateRandomStream();
 
         // Act
         // Assert
-        await Assert.ThrowsAsync<InvalidPndException>(() => stream.GetIconAsync(TestContext.Current.CancellationToken));
+        await Assert.ThrowsAsync<PndArchiveException>(() => stream.GetIconAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]

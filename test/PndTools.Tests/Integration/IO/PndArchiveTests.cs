@@ -1,10 +1,8 @@
 // Copyright (c) milkshakeuk. All rights reserved.
 // SPDX-License-Identifier: MIT
 
-using System.IO;
 using PndTools.IO;
 using PndTools.IO.Extensions;
-using PndTools.Models;
 
 namespace PndTools.Tests.Integration.IO;
 
@@ -20,14 +18,26 @@ public class PndArchiveTests
     }
 
     [Fact]
-    public void Open_UnknownFileType_ThrowsInvalidPndException()
+    public void Open_UnknownFileType_ThrowsPndArchiveException()
     {
         // Arrange
         using var stream = new MemoryStream([0x00, 0x01, 0x02, 0x03]);
 
         // Act
         // Assert
-        Assert.Throws<InvalidPndException>(() => PndArchive.Open(stream));
+        Assert.Throws<PndArchiveException>(() => PndArchive.Open(stream));
+    }
+
+    [Fact]
+    public void Open_StreamNotAtOrigin_ThrowsArgumentOutOfRangeException()
+    {
+        // Arrange
+        using var stream = new MemoryStream([0x00, 0x01, 0x02, 0x03]);
+        stream.Position = 1;
+
+        // Act
+        // Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => PndArchive.Open(stream));
     }
 
     [Fact]
@@ -510,7 +520,7 @@ public class PndArchiveTests
             using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
             using var archive = PndArchive.Open(stream);
             var pxmlString = await stream.GetPxmlAsync(TestContext.Current.CancellationToken);
-            var pxml = PxmlParser.Parse(pxmlString);
+            var pxml = new PxmlParser().Parse(pxmlString);
 
             // Act
             var result = await archive.ExtractPreviewPicsAsync(pxml, outputDirectory, TestContext.Current.CancellationToken);
@@ -535,7 +545,7 @@ public class PndArchiveTests
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
         var archive = PndArchive.Open(stream);
         var pxmlString = await stream.GetPxmlAsync(TestContext.Current.CancellationToken);
-        var pxml = PxmlParser.Parse(pxmlString);
+        var pxml = new PxmlParser().Parse(pxmlString);
         archive.Dispose();
 
         // Act
@@ -643,7 +653,7 @@ public class PndArchiveTests
         using var stream = File.OpenRead("Integration/TestCase/SORR.pnd");
         using var archive = PndArchive.Open(stream);
         var pxmlString = await stream.GetPxmlAsync(TestContext.Current.CancellationToken);
-        var pxml = PxmlParser.Parse(pxmlString);
+        var pxml = new PxmlParser().Parse(pxmlString);
 
         // Act
         // Assert
