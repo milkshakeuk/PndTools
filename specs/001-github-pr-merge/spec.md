@@ -103,7 +103,7 @@ Multiple open Dependabot PRs for minor/patch updates are grouped and merged toge
 - **FR-011b**: A circuit breaker MUST be applied after a configurable number of consecutive failures, preventing further attempts until the next batch window.
 - **FR-011c**: If a merge operation cannot complete after all retries are exhausted, the system MUST post a comment on the affected PR explaining the failure and fail the workflow run to surface the issue in CI.
 - **FR-009**: A summary of which PRs were included in a batch merge MUST be recorded (for example, as a comment on each merged PR or in a workflow run log).
-- **FR-010**: A PR MUST be blocked from merging if its branch has diverged from main (i.e. is not up to date). The contributor or Dependabot must bring the branch up to date before the merge gate can be satisfied.
+- **FR-010**: Every PR MUST be up to date with main before it is merged. Mergify satisfies this automatically for all PRs by rebasing the branch against main as part of queue processing (`update_method: rebase`).
 
 ### Key Entities
 

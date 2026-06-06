@@ -26,7 +26,7 @@ Copy the contract at `specs/001-github-pr-merge/contracts/mergify.yml` to `.merg
 In **Settings → Rules → Rulesets**, create the three rulesets defined in `specs/001-github-pr-merge/contracts/rulesets.md`:
 
 1. **Commit Integrity** — require signed commits, require linear history; no bypass actors.
-2. **CI Quality Gates** — required status checks in strict mode; list the same check names used in `.mergify.yml`; no bypass actors.
+2. **CI Quality Gates** — required status checks; list the same check names used in `.mergify.yml`; disable "Require branches to be up to date" (Mergify satisfies this via `update_method: rebase`); no bypass actors.
 3. **Review Gates** — require pull request with codeowner approval and stale-review dismissal; add the Mergify GitHub App as a bypass actor.
 
 Remove any legacy branch protection rules on `main` once the rulesets are active.

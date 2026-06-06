@@ -62,7 +62,7 @@
 **Independent Test**: Observe a live Dependabot minor or patch PR — after checks pass it should enqueue automatically and merge within 35 minutes without any human action (30-minute fill window plus merge execution time, per SC-002); each dependency update appears as its own commit on `main`
 
 - [X] T011 [P] [US2] Create `.github/dependabot.yml` with three ecosystem entries (`nuget`, `npm`, `github-actions`), each targeting `/`, scheduled weekly, `open-pull-requests-limit: 10`, and a `labels:` entry applying the ecosystem label (`nuget`, `npm`, `github-actions` respectively) — these labels are required for Mergify ecosystem queue routing and are not added by Dependabot by default
-- [X] T012 [US2] Add `nuget-deps`, `npm-deps`, and `actions-deps` queues to `.mergify.yml` — each with `merge_method: fast-forward`, `update_method: rebase`, `branch_protection_injection_mode: none`, `merge_bot_account: milkshakeuk`, `max_checks_retries: 3`, and `queue_conditions` for `base = main`, `author = dependabot[bot]`, and the ecosystem label; no batching — individual fast-forward merges per PR
+- [X] T012 [US2] Add `nuget-deps`, `npm-deps`, and `actions-deps` queues to `.mergify.yml` — each with `merge_method: fast-forward`, `update_method: rebase`, `batch_size: 10`, `max_checks_retries: 3`, and `queue_conditions` for `base = main`, `author = dependabot[bot]`, and the ecosystem label; add `merge_queue: max_parallel_checks: 10` at the top level
 - [X] T013 [US2] Add explicit `pull_request_rules` queue actions for each Dependabot ecosystem — conditions include all required CI checks; added auto-update rule to keep Dependabot PR branches current with main via `update` action, preventing dequeue due to branch falling behind
 
 **Checkpoint**: US2 is fully functional — eligible Dependabot minor/patch PRs enqueue automatically into the correct ecosystem queue and batch-merge within the 30-minute window
@@ -86,13 +86,13 @@
 
 **Goal**: Confirm that a failing check in one ecosystem does not block merges in another
 
-**Note**: Batching was removed in favour of individual fast-forward merges per PR. Per-ecosystem isolation via separate queues is retained.
+**Note**: Per-ecosystem isolation is provided by separate queues. Batching is enabled via `batch_size: 10` on each ecosystem queue.
 
 **Independent Test**: With a Dependabot PR failing CI in one ecosystem, confirm PRs in other ecosystems still queue and merge independently
 
 - [X] T015 [US4] Per-ecosystem isolation verified in practice — separate `nuget-deps`, `npm-deps`, and `actions-deps` queues confirmed independent during live testing
-- ~~T016 batch fill window~~ — removed; batching not implemented
-- ~~T016a FR-009 batch summary~~ — removed; batching not implemented
+- ~~T016 batch fill window~~ — not configured; Mergify uses its default fill window behaviour
+- ~~T016a FR-009 batch summary~~ — not implemented; batch membership is visible in Mergify dashboard and queue dequeue notifications
 - ~~T016b mixed semver tiebreaker~~ — not observed in practice; Dependabot applies a single semver label per PR
 
 **Checkpoint**: Per-ecosystem isolation confirmed

@@ -25,7 +25,7 @@ Four rulesets are configured on the `main` branch. Each has a single concern and
 
 | Rule | Configuration |
 | --- | --- |
-| Required status checks | strict mode (branch must be up to date); checks listed below |
+| Required status checks | checks listed below; "Require branches to be up to date" disabled — Mergify satisfies FR-010 via `update_method: rebase` in the queue |
 
 **Required checks**:
 
@@ -34,9 +34,7 @@ Four rulesets are configured on the `main` branch. Each has a single concern and
 - `dependency-review` — blocks PRs introducing vulnerable packages
 - `build` — `dotnet build` zero-warnings gate and `dotnet test` all-pass gate
 
-The strict mode setting enforces FR-010 (branch must be up to date with main before merge).
-
-**Enforces**: FR-001, FR-010
+**Enforces**: FR-001
 
 ---
 

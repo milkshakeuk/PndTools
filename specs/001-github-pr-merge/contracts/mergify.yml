@@ -20,13 +20,11 @@
 # conditions and automatically queues the PR when they all pass — no manual @Mergifyio queue command
 # is needed.
 #
-# Mergify automatically injects conditions from active GitHub Repository Rulesets into
-# pull_request_rules condition evaluation:
-#   - CI Quality Gates ruleset  → commitlint, lint, dependency-review, build
-#   - Security Scanning ruleset → Analyze (csharp)
-#   - Review Gates ruleset      → approved reviews, no changes requested
-#                                  (not injected for Dependabot PRs — Dependabot has bypass_mode: pull_request)
-# Repeating these in conditions or merge_conditions would be redundant.
+# Mergify is added as a bypass actor (bypass_mode: always) on the Review Gates GitHub ruleset.
+# This replaces the previous merge_bot_account + branch_protection_injection_mode: none approach.
+# All queues use the default branch_protection_injection_mode (queue), which injects ruleset
+# conditions into queue evaluation. For Dependabot PRs, the Review Gates ruleset does not inject
+# approval conditions because Dependabot has bypass_mode: pull_request on that ruleset.
 #
 # dependabot-update-type is only used in the codeowner approval merge_protection (where it is
 # documented). It is NOT used in queue_conditions, merge_conditions, or pull_request_rules conditions
@@ -36,8 +34,13 @@
 # queued, until a codeowner approves. Minor/patch PRs are not subject to this protection and merge
 # automatically once CI passes.
 #
-# update_method: rebase on all queue rules keeps Mergify's temporary queue branch linear.
-# The default (merge) introduces merge commits which trigger dequeue via require_linear_history.
+# update_method: rebase on all queue rules keeps Mergify's temporary queue branch linear and
+# satisfies FR-010 — Mergify rebases every PR against the current tip of main before merging.
+# The GitHub "Require branches to be up to date" setting is therefore disabled; Mergify owns
+# this guarantee via the queue.
+#
+# max_parallel_checks: 10 is set at the merge_queue level (top-level key), not per queue rule.
+# batch_size: 5 is set per queue rule.
 #
 # max_checks_retries: controls how many times Mergify retries a failing CI check before
 # dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
@@ -69,28 +72,28 @@ merge_protections_settings:
   reporting_method: check-runs
   auto_merge_conditions: true
 
+merge_queue:
+  max_parallel_checks: 10
+
 queue_rules:
 
-  # Standard (non-Dependabot) PRs — no batching.
+  # Standard (non-Dependabot) PRs — batch_size: 5, no ecosystem routing.
   # CI checks and approval are enforced by GitHub rulesets; no merge_conditions needed.
   - name: standard
     merge_method: fast-forward
     update_method: rebase
+    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
       - -author = dependabot[bot]
 
   # Dependabot NuGet updates — all semver levels.
-  # branch_protection_injection_mode: none prevents Review Gates approval from being
-  # injected into queue condition evaluation. merge_bot_account is required by Mergify
-  # when injection is disabled. Major updates are blocked by the codeowner approval
-  # merge_protection until a codeowner approves.
+  # Major updates are blocked by the codeowner approval merge_protection until a codeowner approves.
   - name: nuget-deps
     merge_method: fast-forward
     update_method: rebase
-    branch_protection_injection_mode: none
-    merge_bot_account: milkshakeuk
+    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -101,8 +104,7 @@ queue_rules:
   - name: npm-deps
     merge_method: fast-forward
     update_method: rebase
-    branch_protection_injection_mode: none
-    merge_bot_account: milkshakeuk
+    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main
@@ -113,8 +115,7 @@ queue_rules:
   - name: actions-deps
     merge_method: fast-forward
     update_method: rebase
-    branch_protection_injection_mode: none
-    merge_bot_account: milkshakeuk
+    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main

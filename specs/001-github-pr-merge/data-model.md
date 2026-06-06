@@ -61,7 +61,7 @@ Enforces that all required checks pass and that the branch is up to date before 
 
 | Rule | Setting | Enforces |
 | --- | --- | --- |
-| Required status checks | strict mode; checks enumerated in contracts | FR-001, FR-010 |
+| Required status checks | checks enumerated in contracts; "up to date" requirement disabled — Mergify satisfies FR-010 via `update_method: rebase` | FR-001 |
 
 ### Ruleset 3: Review Gates
 
@@ -99,7 +99,7 @@ opened → checks running → checks pass + codeowner approves → enqueued (sta
 opened → checks running → checks pass → enqueued (ecosystem queue, fill window starts)
                                       → window fills or 30 min elapses → batch merged
        → checks fail                  → excluded from batch (stays open)
-       → branch diverged from main    → blocked (FR-010); Dependabot must rebase
+       → branch diverged from main    → Mergify rebases automatically (FR-010)
 ```
 
 ### Dependabot major PR
