@@ -18,9 +18,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LTRData.DiscUtils.Iso9660" Version="1.0.81" />
-    <PackageReference Include="LTRData.DiscUtils.SquashFs" Version="1.0.81" />
-    <PackageReference Include="LTRData.DiscUtils.Streams" Version="1.0.81" />
+    <PackageReference Include="LTRData.DiscUtils.Iso9660" Version="1.0.82" />
+    <PackageReference Include="LTRData.DiscUtils.SquashFs" Version="1.0.82" />
+    <PackageReference Include="LTRData.DiscUtils.Streams" Version="1.0.82" />
   </ItemGroup>
 
   <ItemGroup>
