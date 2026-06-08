@@ -9,6 +9,8 @@ permissions: {}
 jobs:
   commitlint:
     runs-on: ubuntu-latest
+    env:
+      IS_MERGIFY_QUEUE: ${{ startsWith(github.head_ref, 'mergify/') && github.event.pull_request.user.login == 'mergify[bot]' }}
 
     permissions:
       contents: read
@@ -27,7 +29,23 @@ jobs:
         run: npm ci
 
       - name: Lint commits
+        if: env.IS_MERGIFY_QUEUE != 'true'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: npx commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+
+      - name: Lint commits (skip mergify[bot] commits)
+        if: env.IS_MERGIFY_QUEUE == 'true'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git log --format="%H %an" "$BASE_SHA".."$HEAD_SHA" | \
+          while IFS= read -r line; do
+            sha="${line%% *}"
+            author="${line#* }"
+            if [ "$author" != "mergify[bot]" ]; then
+              npx commitlint --from "${sha}^" --to "$sha" --verbose
+            fi
+          done
