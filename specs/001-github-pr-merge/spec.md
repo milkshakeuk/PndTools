@@ -60,20 +60,19 @@ Dependabot opens a PR for a dependency update that is classified as a major vers
 
 ---
 
-### User Story 4 - Dependabot Batch Merge (Priority: P4)
+### User Story 4 - Per-ecosystem Queue Isolation (Priority: P4)
 
-Multiple open Dependabot PRs for minor/patch updates are grouped and merged together in a single merge operation. Each update remains as its own commit in the history, but they land on the main branch together rather than triggering a separate CI run per PR.
+Dependabot PRs for different package ecosystems are routed into separate queues so that a failing check in one ecosystem cannot block merges in another. Each PR is merged individually; there is no batching.
 
-**Why this priority**: Batching reduces CI noise and keeps the commit graph tidy when many dependencies update simultaneously.
+**Why this priority**: Ecosystem isolation prevents a broken NuGet update from holding up an unrelated GitHub Actions update.
 
-**Independent Test**: Can be fully tested by having two or more eligible Dependabot PRs open simultaneously and verifying that they are merged together in one operation while each retains its individual commit.
+**Independent Test**: Can be fully tested by having a Dependabot PR failing CI in one ecosystem while another ecosystem has a passing PR — the passing PR should merge independently.
 
 **Acceptance Scenarios**:
 
-1. **Given** three open Dependabot PRs all with passing checks, **When** the 30-minute fill window closes, **Then** all three are merged in a single merge operation.
-2. **Given** a batch of Dependabot PRs, **When** one PR has a failing check, **Then** that PR is excluded from the batch and the remaining eligible PRs are merged.
-3. **Given** a merged batch, **When** inspecting the git log, **Then** each dependency update appears as a separate commit rather than a single squashed commit.
-4. **Given** a merged batch, **When** the merge completes, **Then** a summary is posted or logged listing which PRs were included.
+1. **Given** a Dependabot NuGet PR failing CI, **When** a Dependabot npm PR passes all checks, **Then** the npm PR merges independently without being blocked.
+2. **Given** two Dependabot PRs in the same ecosystem both passing checks, **When** the first merges, **Then** the second is rebased and re-tested before merging.
+3. **Given** a Dependabot PR that has been merged, **When** inspecting the git log, **Then** the PR's commit appears individually with its original authorship intact.
 
 ---
 
@@ -96,13 +95,11 @@ Multiple open Dependabot PRs for minor/patch updates are grouped and merged toge
 - **FR-004**: Dependabot PRs for minor or patch version updates MUST be merged automatically once all required checks pass, without requiring human approval.
 - **FR-005**: Dependabot PRs for major version updates MUST follow the same approval gate as standard PRs (all checks pass and codeowner approval required).
 - **FR-006**: The system MUST classify Dependabot PR update types (major, minor, patch) using GitHub's Dependabot metadata labels (`version-update:semver-major`, `version-update:semver-minor`, `version-update:semver-patch`). A PR where none of these labels are present MUST be treated as a major update and require codeowner approval. Where a PR carries multiple semver labels simultaneously (e.g. a grouped update spanning both minor and major dependencies), the highest severity label takes precedence — `semver-major` overrides `semver-minor`, which overrides `semver-patch`.
-- **FR-007a**: The system MUST support batching multiple eligible Dependabot PRs into a single merge operation while preserving individual commits per dependency update. PRs are grouped by package ecosystem (e.g. NuGet, npm, GitHub Actions) and each ecosystem batch is merged independently. Batching uses a fill window of up to 30 minutes from when the first eligible PR in an ecosystem becomes ready; once the window closes, all currently eligible PRs in that ecosystem are merged together.
-- **FR-007b**: The maximum number of PRs included in a single batch MUST be configurable. PRs that exceed the cap remain open and are eligible for the next batch window.
-- **FR-008**: PRs excluded from a batch due to failing checks MUST remain open and unaffected.
-- **FR-011a**: The system MUST retry failed merge API calls using exponential backoff, honouring GitHub's rate limit response headers (`Retry-After`, `X-RateLimit-Reset`) before each retry attempt.
-- **FR-011b**: A circuit breaker MUST be applied after a configurable number of consecutive failures, preventing further attempts until the next batch window.
-- **FR-011c**: If a merge operation cannot complete after all retries are exhausted, the system MUST post a comment on the affected PR explaining the failure and fail the workflow run to surface the issue in CI.
-- **FR-009**: A summary of which PRs were included in a batch merge MUST be recorded (for example, as a comment on each merged PR or in a workflow run log).
+- **FR-007**: Dependabot PRs MUST be routed into per-ecosystem queues (NuGet, npm, GitHub Actions) so that a failing check in one ecosystem cannot block merges in another. Each PR is merged individually via fast-forward; there is no batching.
+- **FR-008**: PRs with failing checks MUST remain open and unaffected while other eligible PRs in the same or different ecosystems continue to merge.
+- **FR-011a**: The system MUST retry failed merge attempts up to a configurable number of times before dequeuing the PR.
+- **FR-011b**: A circuit breaker MUST be applied after a configurable number of consecutive failures, preventing further attempts.
+- **FR-011c**: If a merge operation cannot complete after all retries are exhausted, the system MUST post a comment on the affected PR explaining the failure.
 - **FR-010**: Every PR MUST be up to date with main before it is merged. Mergify satisfies this automatically for all PRs by rebasing the branch against main as part of queue processing (`update_method: rebase`).
 
 ### Key Entities
@@ -110,17 +107,17 @@ Multiple open Dependabot PRs for minor/patch updates are grouped and merged toge
 - **Pull Request**: A proposed change targeting the main branch; classified as either standard or Dependabot-authored, and in the Dependabot case as major, minor, or patch update.
 - **Required Status Check**: A CI job or external check that must report success before a PR is eligible for merge.
 - **Code Owner**: A team member or group designated in CODEOWNERS whose approval is required for human-authored and Dependabot major-version PRs.
-- **Batch**: A grouped set of eligible Dependabot minor/patch PRs within a single package ecosystem that are merged together in one operation. Each ecosystem produces its own independent batch.
+- **Ecosystem Queue**: A named Mergify merge queue scoped to a single package ecosystem (NuGet, npm, GitHub Actions). PRs enter the matching queue based on their ecosystem label and are merged individually via fast-forward.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
 - **SC-001**: Zero standard PRs can be merged without all required checks passing and at least one codeowner approval.
-- **SC-002**: Dependabot minor and patch PRs merge without any human action within 35 minutes of all checks completing (up to 30 minutes for the batch fill window to close, plus merge execution time).
+- **SC-002**: Dependabot minor and patch PRs merge without any human action once all checks complete and the queue processes them.
 - **SC-003**: Dependabot major PRs follow exactly the same gate as standard PRs — no merge without codeowner approval.
-- **SC-004**: When two or more eligible Dependabot PRs are open simultaneously, they are merged in a single batch operation rather than sequentially.
-- **SC-005**: Each dependency update in a batch merge is traceable as an individual commit in the repository history.
+- **SC-004**: A failing check on a Dependabot PR in one ecosystem does not block merges in any other ecosystem.
+- **SC-005**: Every dependency update that lands on main is traceable as an individual commit in the repository history.
 - **SC-006**: Every commit that lands on the main branch carries a valid GPG signature from its original author.
 
 ## Clarifications
@@ -128,10 +125,9 @@ Multiple open Dependabot PRs for minor/patch updates are grouped and merged toge
 ### Session 2026-05-18
 
 - Q: When a PR branch has diverged from main and a true fast-forward is impossible without rewriting commits, how should the system behave? → A: Require the PR branch to be up to date with main before merge is permitted; block the merge if the branch has diverged.
-- Q: What triggers a Dependabot batch merge? → A: A time-window approach — the system waits up to 30 minutes for eligible PRs to accumulate before merging the batch. A configurable maximum batch size caps how many PRs land in a single operation.
 - Q: What is the source used to classify Dependabot PRs as major, minor, or patch? → A: GitHub's Dependabot metadata labels (e.g. `version-update:semver-major`, `version-update:semver-minor`, `version-update:semver-patch`).
-- Q: How should the system handle transient merge failures (API errors, rate limits)? → A: Resilience-first — retry with exponential backoff honouring GitHub rate limit headers, apply a circuit breaker after a configurable number of consecutive failures, then post a PR comment and fail the workflow run if the operation still cannot complete.
-- Q: Should Dependabot batch merges group PRs across all ecosystems or per ecosystem? → A: Per ecosystem — PRs are grouped by ecosystem (e.g. NuGet, npm, GitHub Actions) and each ecosystem batch is merged independently.
+- Q: How should the system handle transient merge failures? → A: Retry up to a configurable number of times; post a PR comment if all retries are exhausted.
+- Q: Should Dependabot PRs be batched? → A: No. fast-forward with batching creates Mergify-authored merge commits on the speculative branch which violate conventional commits, and rebase is incompatible with the required_signatures ruleset. PRs are merged individually per ecosystem queue.
 
 ## Assumptions
 
@@ -140,6 +136,6 @@ Multiple open Dependabot PRs for minor/patch updates are grouped and merged toge
 - Dependabot is already enabled and configured on the repository; this feature adds the merge behaviour on top.
 - "Fast forward merge" means the default branch advances without a merge commit. GitHub's "Rebase and merge" strategy is explicitly ruled out because it rewrites commits (changing their SHA and author timestamp), which invalidates any GPG signatures already on those commits. The chosen strategy must preserve commits exactly as signed.
 - A Dependabot PR that a human contributor has force-pushed to or amended is treated as a standard PR and loses auto-merge eligibility.
-- Batch merging is limited to Dependabot minor/patch PRs; standard PRs and Dependabot major PRs are always merged individually.
+- All PRs are merged individually; there is no batching. fast-forward with batching creates Mergify-authored merge commits incompatible with commitlint, and rebase is incompatible with the required_signatures ruleset.
 - Dependabot grouped updates (a single PR per ecosystem group) are intentionally not used. Individual per-dependency PRs ensure each PR carries exactly one semver label, preventing a major dependency bump from blocking auto-merge of unrelated minor/patch updates within the same ecosystem. The separate queue structure (major PRs → `standard` queue; minor/patch PRs → ecosystem queues) already isolates them, but grouped updates would undermine this by mixing severity levels in a single PR.
 - The version bump type (major/minor/patch) is determined exclusively from GitHub's Dependabot metadata labels (`version-update:semver-major`, `version-update:semver-minor`, `version-update:semver-patch`); PR title is not used. PRs where none of these labels are present are treated as major and require codeowner approval.

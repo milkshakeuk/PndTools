@@ -40,7 +40,7 @@
 # this guarantee via the queue.
 #
 # max_parallel_checks: 10 is set at the merge_queue level (top-level key), not per queue rule.
-# batch_size: 5 is set per queue rule.
+# No batch_size is set — PRs are merged individually.
 #
 # max_checks_retries: controls how many times Mergify retries a failing CI check before
 # dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
@@ -77,12 +77,11 @@ merge_queue:
 
 queue_rules:
 
-  # Standard (non-Dependabot) PRs — batch_size: 5, no ecosystem routing.
+  # Standard (non-Dependabot) PRs — no batching, no ecosystem routing.
   # CI checks and approval are enforced by GitHub rulesets; no merge_conditions needed.
   - name: standard
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -93,7 +92,6 @@ queue_rules:
   - name: nuget-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -104,7 +102,6 @@ queue_rules:
   - name: npm-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main
@@ -115,7 +112,6 @@ queue_rules:
   - name: actions-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main

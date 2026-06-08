@@ -45,7 +45,7 @@ Four rulesets are configured on the `main` branch. Each has a single concern and
 
 | Rule | Configuration |
 | --- | --- |
-| Required status checks | strict mode; checks listed below |
+| Required status checks | checks listed below; "Require branches to be up to date" disabled — Mergify satisfies FR-010 via `update_method: rebase` in the queue |
 | Require code scanning results | CodeQL; thresholds listed below |
 
 **Required checks**:

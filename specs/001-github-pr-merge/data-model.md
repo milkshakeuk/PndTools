@@ -11,9 +11,7 @@ Represents a named merge queue in `.mergify.yml`.
 | Field | Type | Valid values | Notes |
 | --- | --- | --- | --- |
 | `name` | string | `standard`, `nuget-deps`, `npm-deps`, `actions-deps` | One queue per ecosystem plus one for standard/major PRs |
-| `merge_method` | enum | `fast-forward` | Fixed; any other value violates FR-003a/FR-003b |
-| `batch_size` | integer | 1–128 | Configurable per FR-007b; default recommendation: 10 |
-| `batch_max_wait_time` | duration | `30 min` | Fixed per clarification Q2 |
+| `merge_method` | enum | `fast-forward` | Fixed; preserves GPG signatures; rebase is incompatible with required_signatures ruleset |
 | `max_checks_retries` | integer | ≥ 0 | Configurable per FR-011b circuit-breaker intent |
 
 ## Mergify Pull Request Rule
@@ -65,7 +63,7 @@ Enforces that all required checks pass and that the branch is up to date before 
 
 ### Ruleset 3: Review Gates
 
-Enforces human approval requirements. Mergify is added as a bypass actor here because fast-forward merge is executed as a direct push to main, not via a GitHub PR merge action. All other review gate requirements are validated by Mergify before the push is attempted.
+Enforces human approval requirements. Mergify is added as a bypass actor here because rebase merge is executed as a direct push to main, not via a GitHub PR merge action. All other review gate requirements are validated by Mergify before the push is attempted.
 
 | Rule | Setting | Enforces |
 | --- | --- | --- |
@@ -81,7 +79,7 @@ Represents entries in `.github/dependabot.yml`.
 | `package-ecosystem` | `nuget`, `npm`, `github-actions` | One entry per ecosystem |
 | `directory` | `/` | Repo root |
 | `schedule.interval` | `weekly` | Reasonable default; adjust as needed |
-| `open-pull-requests-limit` | integer | Should not exceed `batch_size`; default 5 |
+| `open-pull-requests-limit` | integer | Controls how many open Dependabot PRs exist per ecosystem at once; default 10 |
 
 ## State Transitions
 
@@ -99,7 +97,7 @@ opened → checks running → checks pass + codeowner approves → enqueued (sta
 opened → checks running → checks pass → enqueued (ecosystem queue, fill window starts)
                                       → window fills or 30 min elapses → batch merged
        → checks fail                  → excluded from batch (stays open)
-       → branch diverged from main    → Mergify rebases automatically (FR-010)
+       → branch diverged from main    → Mergify rebases branch via update_method: rebase (FR-010)
 ```
 
 ### Dependabot major PR

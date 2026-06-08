@@ -4,8 +4,9 @@
 # It is a reference contract, not the deployed file.
 # The deployed file lives at: /.github/dependabot.yml
 #
-# open-pull-requests-limit MUST be kept <= batch_size in .mergify.yml
-# to avoid Dependabot opening more PRs than a single batch can absorb.
+# open-pull-requests-limit controls how many open Dependabot PRs exist per
+# ecosystem at once. PRs are merged individually via fast-forward — there is
+# no batching.
 
 version: 2
 
@@ -16,7 +17,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10     # keep <= nuget-deps batch_size in .mergify.yml
+    open-pull-requests-limit: 10
     labels:
       - nuget                        # required for Mergify nuget-deps queue routing
 
@@ -25,7 +26,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10     # keep <= npm-deps batch_size in .mergify.yml
+    open-pull-requests-limit: 10
     labels:
       - npm                          # required for Mergify npm-deps queue routing
 
@@ -34,6 +35,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10     # keep <= actions-deps batch_size in .mergify.yml
+    open-pull-requests-limit: 10
     labels:
       - github-actions               # required for Mergify actions-deps queue routing

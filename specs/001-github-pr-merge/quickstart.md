@@ -15,7 +15,7 @@ Install the Mergify GitHub App on the repository via the GitHub Marketplace or f
 
 ## Step 2 — Configure Dependabot
 
-Copy the contract at `specs/001-github-pr-merge/contracts/dependabot.yml` to `.github/dependabot.yml`. Adjust the `open-pull-requests-limit` per ecosystem to match the `batch_size` values you choose in the Mergify configuration.
+Copy the contract at `specs/001-github-pr-merge/contracts/dependabot.yml` to `.github/dependabot.yml`. Adjust the `open-pull-requests-limit` per ecosystem as needed — PRs are merged individually so there is no batch size to align with.
 
 ## Step 3 — Deploy Mergify configuration
 
@@ -41,11 +41,8 @@ Open a test PR and confirm:
 - A Dependabot major PR does not auto-enqueue and requires approval.
 - Commits on `main` retain their GPG signatures after merging (Ruleset 1 + Mergify fast-forward).
 
-## Tuning batch behaviour
+## Tuning queue behaviour
 
-To adjust the fill window or batch size, edit the relevant `queue_rules` entry in `.mergify.yml`:
-
-- `batch_max_wait_time` — how long Mergify waits for the batch to fill (default: `30 min`)
-- `batch_size` — maximum number of PRs per batch (default: `10`; keep in sync with Dependabot `open-pull-requests-limit`)
+To adjust the number of parallel speculative checks, edit `merge_queue.max_parallel_checks` in `.mergify.yml`. Each PR is merged individually via fast-forward — batching is not used as it is incompatible with the `required_signatures` ruleset and commitlint.
 
 [mergify]: https://mergify.com
