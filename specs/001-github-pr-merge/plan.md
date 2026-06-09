@@ -6,9 +6,9 @@
 
 ## Summary
 
-Configure the PndTools GitHub repository to enforce fast-forward-only merges that preserve commit signatures, gate standard and Dependabot major-version PRs behind codeowner approval and passing CI checks, and automatically merge Dependabot minor/patch PRs per package ecosystem via Mergify's merge queue.
+Configure the PndTools GitHub repository to enforce fast-forward-only merges that preserve commit signatures, gate standard and Dependabot major-version PRs behind codeowner approval and passing CI checks, and automatically merge Dependabot minor/patch PRs individually per package ecosystem via Mergify's merge queue.
 
-The solution combines configuration and a small GitHub Actions workflow: three GitHub Repository Rulesets enforce commit integrity, CI quality gates, and review gates; Mergify (free tier, full feature set on public repos) executes the fast-forward merges via per-ecosystem queues; a Dependabot NuGet Fix workflow amends non-conventional commit messages and re-signs commits using a dedicated GitHub App (`milkshake-writer-bot`) before CI re-runs.
+The solution combines configuration and a small GitHub Actions workflow: three GitHub Repository Rulesets enforce commit integrity, CI quality gates, and review gates; Mergify (free tier, full feature set on public repos) executes fast-forward merges via per-ecosystem queues; a Dependabot NuGet Fix workflow amends non-conventional commit messages and re-signs commits using a dedicated GitHub App (`milkshake-writer-bot`) before CI re-runs.
 
 ## Technical Context
 
@@ -36,7 +36,7 @@ The solution combines configuration and a small GitHub Actions workflow: three G
 
 - Commits on `main` must be signed (FR-003b) — rules out rebase and squash merge strategies
 - Linear history required (FR-003a) — rules out merge commits
-- Mergify fast-forward is the only GitHub-compatible strategy satisfying both constraints simultaneously
+- Mergify fast-forward is the only strategy satisfying both constraints simultaneously — it advances the base branch pointer without creating new commits, so existing GPG signatures are preserved intact; rebase rewrites commits and is incompatible with the required_signatures ruleset
 - Dependabot NuGet commits are unsigned and use non-conventional commit messages; a fix workflow using a GitHub App resolves both before CI re-runs
 - Mergify queue branches are kept up to date via rebase (`update_method: rebase`) to avoid merge commits on the temporary queue branch
 

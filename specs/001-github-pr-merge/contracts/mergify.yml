@@ -39,8 +39,9 @@
 # The GitHub "Require branches to be up to date" setting is therefore disabled; Mergify owns
 # this guarantee via the queue.
 #
-# max_parallel_checks: 10 is set at the merge_queue level (top-level key), not per queue rule.
-# batch_size: 5 is set per queue rule.
+# max_parallel_checks: 1 disables speculative checking. Without this, Mergify creates cumulative
+# temporary branches (PR#1 + PR#2, PR#1 + PR#2 + PR#3, etc.) which contain Mergify-authored
+# merge commits that fail commitlint. Setting to 1 means each PR is tested independently.
 #
 # max_checks_retries: controls how many times Mergify retries a failing CI check before
 # dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
@@ -73,16 +74,15 @@ merge_protections_settings:
   auto_merge_conditions: true
 
 merge_queue:
-  max_parallel_checks: 10
+  max_parallel_checks: 1
 
 queue_rules:
 
-  # Standard (non-Dependabot) PRs — batch_size: 5, no ecosystem routing.
+  # Standard (non-Dependabot) PRs — no batching, no ecosystem routing.
   # CI checks and approval are enforced by GitHub rulesets; no merge_conditions needed.
   - name: standard
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -93,7 +93,6 @@ queue_rules:
   - name: nuget-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -104,7 +103,6 @@ queue_rules:
   - name: npm-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main
@@ -115,7 +113,6 @@ queue_rules:
   - name: actions-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main

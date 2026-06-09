@@ -18,14 +18,13 @@ merge_protections_settings:
   auto_merge_conditions: true
 
 merge_queue:
-  max_parallel_checks: 10
+  max_parallel_checks: 1
 
 queue_rules:
 
   - name: standard
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -34,7 +33,6 @@ queue_rules:
   - name: nuget-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
@@ -44,7 +42,6 @@ queue_rules:
   - name: npm-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main
@@ -54,7 +51,6 @@ queue_rules:
   - name: actions-deps
     merge_method: fast-forward
     update_method: rebase
-    batch_size: 10
     max_checks_retries: 3
     queue_conditions:
       - base = main
