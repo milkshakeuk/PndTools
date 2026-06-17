@@ -45,7 +45,7 @@
 
 **Independent Test**: Open a test PR; confirm it cannot be merged before checks pass, cannot be merged without codeowner approval, and once both conditions are met Mergify merges it via fast-forward leaving the commit signature intact on `main`
 
-- [X] T006 [US1] Create `.mergify.yml` at the repository root containing the `standard` queue: `merge_method: fast-forward`, `max_checks_retries: 3`, `queue_conditions` for `base = main` and `-author = dependabot[bot]`; no `merge_conditions` needed — CI checks and approval are enforced by GitHub rulesets and injected automatically by Mergify
+- [X] T006 [US1] Create `.mergify.yml` at the repository root containing the `standard` queue: `merge_method: fast-forward`, `max_checks_retries: 3`, `queue_conditions` for `base = main` and `-author = dependabot[bot]`; no `update_method` — standard PR authors must keep their branches current manually to preserve GPG signatures
 - [X] T007 [US1] Add the `merge standard PRs` pull_request_rule to `.mergify.yml` — conditions: `base = main`, `-author = dependabot[bot]`, approval count, no change requests, all checks pass; action: `queue: standard`
 - [X] T008 [US1] Configure Ruleset 3 (Review Gates) on `main` — enable **Require pull request**, set `required_approving_review_count: 1`, enable **Require code owner review** and **Dismiss stale reviews on push**; bypass actors: Mergify (`bypass_mode: always` — needed for direct fast-forward push to `main`), Dependabot (`bypass_mode: pull_request` — prevents approval injection on minor/patch PRs)
 - [X] T009 [US1] Add the `notify on merge failure` pull_request_rule to `.mergify.yml` — condition matching all terminal dequeue reasons (`checks-timeout`, `merge-failed`, `pr-dequeued`); actions: post a comment on the PR explaining the failure and add a `merge-failed` label
@@ -57,15 +57,15 @@
 
 ## Phase 4: User Story 2 — Dependabot Minor/Patch Auto-Merge (Priority: P2)
 
-**Goal**: Dependabot minor and patch PRs for NuGet, npm, and GitHub Actions merge automatically once checks pass, without human approval, using per-ecosystem batch queues with a 30-minute fill window
+**Goal**: Dependabot minor and patch PRs merge automatically once checks pass, without human approval, using a direct fast-forward merge action — no queue, no speculative branches, no Mergify-authored commits
 
-**Independent Test**: Observe a live Dependabot minor or patch PR — after checks pass it should enqueue automatically and merge within 35 minutes without any human action (30-minute fill window plus merge execution time, per SC-002); each dependency update appears as its own commit on `main`
+**Independent Test**: Observe a live Dependabot minor or patch PR — after checks pass it should merge automatically without any human action; each dependency update appears as its own commit on `main` with its original GPG signature intact
 
-- [X] T011 [P] [US2] Create `.github/dependabot.yml` with three ecosystem entries (`nuget`, `npm`, `github-actions`), each targeting `/`, scheduled weekly, `open-pull-requests-limit: 10`, and a `labels:` entry applying the ecosystem label (`nuget`, `npm`, `github-actions` respectively) — these labels are required for Mergify ecosystem queue routing and are not added by Dependabot by default
-- [X] T012 [US2] Add `nuget-deps`, `npm-deps`, and `actions-deps` queues to `.mergify.yml` — each with `merge_method: fast-forward`, `update_method: rebase`, `max_checks_retries: 3`, and `queue_conditions` for `base = main`, `author = dependabot[bot]`, and the ecosystem label; set `merge_queue: max_parallel_checks: 1` to disable speculative checking, which creates cumulative branches with Mergify-authored merge commits that fail commitlint
-- [X] T013 [US2] Add explicit `pull_request_rules` queue actions for each Dependabot ecosystem — conditions include all required CI checks; added auto-update rule to keep Dependabot PR branches current with main via `update` action, preventing dequeue due to branch falling behind
+- [X] T011 [P] [US2] Create `.github/dependabot.yml` with three ecosystem entries (`nuget`, `npm`, `github-actions`), each targeting `/`, scheduled weekly, and `open-pull-requests-limit: 10`
+- [X] T012 [US2] Add the `auto-merge Dependabot PRs` pull_request_rule to `.mergify.yml` — conditions: `base = main`, `author = dependabot[bot]`, all required CI checks pass; action: `merge: method: fast-forward`; add the `rebase Dependabot PRs when outdated` rule to trigger Dependabot's own rebase when the branch falls behind main
+- [X] T013 [US2] Remove per-ecosystem queues (`nuget-deps`, `npm-deps`, `actions-deps`) and `merge_queue` section — direct merge action requires no queue routing; Dependabot manages its own branch currency and GPG signatures are preserved intact
 
-**Checkpoint**: US2 is fully functional — eligible Dependabot minor/patch PRs enqueue automatically into the correct ecosystem queue and batch-merge within the 30-minute window
+**Checkpoint**: US2 is fully functional — eligible Dependabot minor/patch PRs merge automatically via fast-forward once CI passes; each commit on main retains its original signature
 
 ---
 
@@ -75,7 +75,7 @@
 
 **Independent Test**: Observe a live Dependabot major-version PR — it should remain open after checks pass and only merge once a codeowner approves, following the same path as a standard PR
 
-- [X] T014a [US3] Major Dependabot PRs are gated by the `codeowner approval` merge_protection (`dependabot-update-type = version-update:semver-major` condition) — `auto_merge_conditions: true` will not queue them until a codeowner approves; they then route into the matching ecosystem queue via `queue_conditions`
+- [X] T014a [US3] Major Dependabot PRs are gated by the `codeowner approval` merge_protection (`dependabot-update-type = version-update:semver-major` condition) — `auto_merge_conditions: true` prevents the `auto-merge Dependabot PRs` rule from firing until a codeowner approves
 - [X] T014b [US3] Add Dependabot to the Review Gates ruleset bypass list (`bypass_mode: pull_request`) — prevents approval conditions from being injected into Mergify queue evaluation for minor/patch PRs while retaining the `codeowner approval` merge_protection gate for major PRs (FR-006)
 
 **Checkpoint**: US3 is fully functional — Dependabot major PRs require approval and route through the standard queue
@@ -86,12 +86,12 @@
 
 **Goal**: Confirm that a failing check in one ecosystem does not block merges in another
 
-**Note**: Per-ecosystem isolation is provided by separate queues. Each PR is tested and merged individually via fast-forward. Speculative checking (`max_parallel_checks: 1`) and batching are both disabled — both create cumulative Mergify-authored merge commits that fail commitlint, and rebase is incompatible with the required_signatures ruleset.
+**Note**: Independence is provided by the direct merge action — each Dependabot PR merges as soon as its own CI passes with no shared queue state. No Mergify-authored commits are created, and rebase is never performed by Mergify, so GPG signatures are preserved.
 
 **Independent Test**: With a Dependabot PR failing CI in one ecosystem, confirm PRs in other ecosystems still queue and merge independently
 
-- [X] T015 [US4] Per-ecosystem isolation verified in practice — separate `nuget-deps`, `npm-deps`, and `actions-deps` queues confirmed independent during live testing
-- ~~T016 batch fill window~~ — not configured; Mergify uses its default fill window behaviour
+- [X] T015 [US4] Independence verified in practice — direct merge action confirmed; Dependabot PRs merge individually with no shared queue state
+- ~~T016 batch fill window~~ — not applicable; Dependabot PRs use a direct merge action, not a queue
 - ~~T016a FR-009 batch summary~~ — not implemented; batch membership is visible in Mergify dashboard and queue dequeue notifications
 - ~~T016b mixed semver tiebreaker~~ — not observed in practice; Dependabot applies a single semver label per PR
 
@@ -116,7 +116,7 @@
 - **Setup (Phase 1)**: No dependencies — start immediately; T002 and T003 can run in parallel with T001
 - **Foundational (Phase 2)**: Requires Phase 1 complete — T003 job names feed into T004/T005
 - **US1 (Phase 3)**: Requires Phase 2 complete — rulesets must be active before Mergify is configured
-- **US2 (Phase 4)**: Requires Phase 3 complete — ecosystem queues build on the standard queue; T011 can start in parallel with T012/T013
+- **US2 (Phase 4)**: Requires Phase 3 complete — Dependabot merge rules sit alongside the standard queue in the same `.mergify.yml`; T011 can start in parallel with T012/T013
 - **US3 (Phase 5)**: Requires Phase 3 complete — routes Dependabot major PRs to the standard queue from US1
 - **US4 (Phase 6)**: Requires Phase 4 complete — validates batching behaviour from US2
 - **Polish (Phase 7)**: Requires all desired user stories complete
@@ -124,7 +124,7 @@
 ### User Story Dependencies
 
 - **US1 (P1)**: Depends on Foundational (Phase 2) only — no dependency on other user stories
-- **US2 (P2)**: Depends on US1 — ecosystem queues sit alongside the standard queue in the same `.mergify.yml`
+- **US2 (P2)**: Depends on US1 — Dependabot merge rules sit alongside the standard queue in the same `.mergify.yml`
 - **US3 (P3)**: Depends on US1 — reuses the standard queue created in US1
 - **US4 (P4)**: Depends on US2 — validates the batch queues created in US2; US3 can run in parallel with US4
 

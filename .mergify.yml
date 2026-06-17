@@ -17,51 +17,17 @@ merge_protections_settings:
   reporting_method: check-runs
   auto_merge_conditions: true
 
-merge_queue:
-  max_parallel_checks: 1
-
 queue_rules:
 
+  # Standard (non-Dependabot) PRs — queued to serialise merges and enforce CI + approval.
   - name: standard
     merge_method: fast-forward
-    update_method: rebase
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
     queue_conditions:
       - base = main
       - -author = dependabot[bot]
 
-  - name: nuget-deps
-    merge_method: fast-forward
-    update_method: rebase
-    max_checks_retries: 3            # configurable; FR-011b circuit breaker
-    queue_conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label = nuget
-
-  - name: npm-deps
-    merge_method: fast-forward
-    update_method: rebase
-    max_checks_retries: 3
-    queue_conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label = npm
-
-  - name: actions-deps
-    merge_method: fast-forward
-    update_method: rebase
-    max_checks_retries: 3
-    queue_conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label = github-actions
-
 pull_request_rules:
-
-  # Explicit CI checks are listed here rather than relying on ruleset injection,
-  # which also injects the Review Gates approval requirement and blocks Dependabot
-  # PRs from queuing. GitHub rulesets still enforce these at the push layer.
 
   # Standard PRs require CI and codeowner approval before queuing.
   - name: queue standard PRs
@@ -79,53 +45,23 @@ pull_request_rules:
       queue:
         name: standard
 
-  # Dependabot minor/patch PRs queue automatically once CI passes.
-  # Major PRs also queue here but the codeowner approval merge_protection
-  # blocks the merge until a codeowner approves.
-  - name: queue Dependabot NuGet PRs
+  # Dependabot PRs merge directly once CI passes — no queue, no speculative branch.
+  # Major PRs are blocked by the codeowner approval merge_protection until approved.
+  # Dependabot keeps its own branches up to date; signed commits are preserved.
+  - name: auto-merge Dependabot PRs
     conditions:
       - base = main
       - author = dependabot[bot]
-      - label = nuget
       - check-success = commitlint
       - check-success = lint
       - check-success = dependency-review
       - check-success = build
       - check-success = Analyze (csharp)
     actions:
-      queue:
-        name: nuget-deps
+      merge:
+        method: fast-forward
 
-  - name: queue Dependabot npm PRs
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label = npm
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: npm-deps
-
-  - name: queue Dependabot Actions PRs
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - label = github-actions
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      queue:
-        name: actions-deps
-
-  # Keep Dependabot PR branches up to date with main so they don't fall behind
-  # and get dequeued for failing the branch up-to-date requirement.
+  # Keep Dependabot PR branches up to date with main.
   - name: rebase Dependabot PRs when outdated
     conditions:
       - base = main
@@ -135,7 +71,7 @@ pull_request_rules:
     actions:
       update:
 
-  # Failure notification — post a comment when a PR is dequeued for any terminal reason.
+  # Failure notification — post a comment when a standard PR is dequeued for any terminal reason.
   - name: notify on merge failure
     conditions:
       - base = main

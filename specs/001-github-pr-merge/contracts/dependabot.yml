@@ -19,7 +19,7 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     labels:
-      - nuget                        # required for Mergify nuget-deps queue routing
+      - nuget
 
   # npm (Node.js devDependencies)
   - package-ecosystem: npm
@@ -28,7 +28,7 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     labels:
-      - npm                          # required for Mergify npm-deps queue routing
+      - npm
 
   # GitHub Actions workflow dependencies
   - package-ecosystem: github-actions
@@ -37,4 +37,4 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     labels:
-      - github-actions               # required for Mergify actions-deps queue routing
+      - github-actions

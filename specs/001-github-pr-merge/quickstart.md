@@ -26,7 +26,7 @@ Copy the contract at `specs/001-github-pr-merge/contracts/mergify.yml` to `.merg
 In **Settings → Rules → Rulesets**, create the three rulesets defined in `specs/001-github-pr-merge/contracts/rulesets.md`:
 
 1. **Commit Integrity** — require signed commits, require linear history; no bypass actors.
-2. **CI Quality Gates** — required status checks; list the same check names used in `.mergify.yml`; disable "Require branches to be up to date" (Mergify satisfies this via `update_method: rebase`); no bypass actors.
+2. **CI Quality Gates** — required status checks; list the same check names used in `.mergify.yml`; disable "Require branches to be up to date" (standard PR authors rebase manually; Dependabot branches are updated via the `update` action); no bypass actors.
 3. **Review Gates** — require pull request with codeowner approval and stale-review dismissal; add the Mergify GitHub App as a bypass actor.
 
 Remove any legacy branch protection rules on `main` once the rulesets are active.
@@ -37,12 +37,9 @@ Open a test PR and confirm:
 
 - The PR cannot be merged without checks passing (Ruleset 2).
 - The PR cannot be merged without codeowner approval (Ruleset 3).
-- A Dependabot minor/patch PR enqueues automatically in the correct ecosystem queue after checks pass.
-- A Dependabot major PR does not auto-enqueue and requires approval.
+- A Dependabot minor/patch PR merges automatically via fast-forward once checks pass, with no human action.
+- A Dependabot major PR does not auto-merge and requires codeowner approval.
 - Commits on `main` retain their GPG signatures after merging (Ruleset 1 + Mergify fast-forward).
-
-## Tuning queue behaviour
-
-`merge_queue.max_parallel_checks` is set to `1` to disable speculative checking. Speculative checking creates cumulative temporary branches containing Mergify-authored merge commits that fail commitlint. Each PR is tested and merged individually via fast-forward.
+- A standard PR branch that has fallen behind main is refused by Mergify until the author rebases manually.
 
 [mergify]: https://mergify.com

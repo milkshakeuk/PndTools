@@ -10,8 +10,8 @@ Represents a named merge queue in `.mergify.yml`.
 
 | Field | Type | Valid values | Notes |
 | --- | --- | --- | --- |
-| `name` | string | `standard`, `nuget-deps`, `npm-deps`, `actions-deps` | One queue per ecosystem plus one for standard/major PRs |
-| `merge_method` | enum | `fast-forward` | Fixed; preserves GPG signatures; rebase is incompatible with required_signatures ruleset |
+| `name` | string | `standard` | One queue for standard (non-Dependabot) PRs; Dependabot PRs use the direct merge action instead |
+| `merge_method` | enum | `fast-forward` | Fixed; preserves GPG signatures; no update_method so Mergify never rewrites commits |
 | `max_checks_retries` | integer | ≥ 0 | Configurable per FR-011b circuit-breaker intent |
 
 ## Mergify Pull Request Rule
@@ -55,11 +55,11 @@ Enforces the quality of commits that land on main. No bypass actors — these co
 
 ### Ruleset 2: CI Quality Gates
 
-Enforces that all required checks pass and that the branch is up to date before any merge. No bypass actors — Mergify validates these conditions before executing the fast-forward push, so the push only happens when they are already satisfied.
+Enforces that all required checks pass before any merge. No bypass actors — Mergify validates these conditions before executing the fast-forward push, so the push only happens when they are already satisfied.
 
 | Rule | Setting | Enforces |
 | --- | --- | --- |
-| Required status checks | checks enumerated in contracts; "up to date" requirement disabled — Mergify satisfies FR-010 via `update_method: rebase` | FR-001 |
+| Required status checks | checks enumerated in contracts; "up to date" requirement disabled — standard PR authors rebase manually; Dependabot branches are updated via the `update` action | FR-001 |
 
 ### Ruleset 3: Review Gates
 
@@ -94,15 +94,14 @@ opened → checks running → checks pass + codeowner approves → enqueued (sta
 ### Dependabot minor/patch PR
 
 ```text
-opened → checks running → checks pass → enqueued (ecosystem queue, fill window starts)
-                                      → window fills or 30 min elapses → batch merged
-       → checks fail                  → excluded from batch (stays open)
-       → branch diverged from main    → Mergify rebases branch via update_method: rebase (FR-010)
+opened → checks running → checks pass → Mergify merges directly via fast-forward
+       → checks fail                  → stays open
+       → branch behind main           → Mergify triggers update action → Dependabot rebases branch → CI re-runs (FR-010)
 ```
 
 ### Dependabot major PR
 
 ```text
-opened → checks running → checks pass + codeowner approves → enqueued (standard queue) → merged
+opened → checks running → checks pass + codeowner approves → Mergify merges directly via fast-forward
                        → checks fail                       → blocked (stays open)
 ```
