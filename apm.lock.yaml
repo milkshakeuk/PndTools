@@ -1,16 +1,58 @@
 lockfile_version: '1'
-generated_at: '2026-05-13T15:00:37.908147+00:00'
-apm_version: 0.13.0
+generated_at: '2026-06-17T13:48:14.028997+00:00'
+apm_version: 0.20.0
 dependencies:
 - repo_url: dgalarza/claude-code-workflows
   host: github.com
-  resolved_commit: e4b8a682ca721d7c308f3151732a3f14caf03246
+  resolved_commit: 93cd3161891ee597cd23a165c4b8d458d3bdb024
   virtual_path: plugins/conventional-commits
   is_virtual: true
   package_type: marketplace_plugin
   deployed_files:
   - .agents/skills/conventional-commits
+  - .agents/skills/conventional-commits/SKILL.md
+  - .agents/skills/conventional-commits/references/commit-examples.md
   - .claude/skills/conventional-commits
+  - .claude/skills/conventional-commits/SKILL.md
+  - .claude/skills/conventional-commits/references/commit-examples.md
+  deployed_file_hashes:
+    .agents/skills/conventional-commits/SKILL.md: sha256:b4bf3f201a92a34b8d8e4d807200eac44a0681815efd6b103aa5b9a64d6c02f1
+    .agents/skills/conventional-commits/references/commit-examples.md: sha256:29e97b30bad32744a590661338d9cde34cbbdb5b99b865655bb06f54c55b9ea2
+    .claude/skills/conventional-commits/SKILL.md: sha256:b4bf3f201a92a34b8d8e4d807200eac44a0681815efd6b103aa5b9a64d6c02f1
+    .claude/skills/conventional-commits/references/commit-examples.md: sha256:29e97b30bad32744a590661338d9cde34cbbdb5b99b865655bb06f54c55b9ea2
   content_hash: sha256:1c939d2e1e95f8ea7de64155adfa0127792565ad0be4003f1f1592c16990e81f
-  discovered_via: dgalarza-workflows
-  marketplace_plugin_name: conventional-commits
+- repo_url: upstash/context7
+  host: github.com
+  resolved_commit: cd12120f4024ae646aba17c76ada4805bc1ac04a
+  virtual_path: skills/context7-mcp
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .agents/skills/context7-mcp
+  - .agents/skills/context7-mcp/SKILL.md
+  - .claude/skills/context7-mcp
+  - .claude/skills/context7-mcp/SKILL.md
+  deployed_file_hashes:
+    .agents/skills/context7-mcp/SKILL.md: sha256:6f07fd4d6cbf96c00c66ef859c2981efb0795315069f55af30c0ae4f28b77690
+    .claude/skills/context7-mcp/SKILL.md: sha256:6f07fd4d6cbf96c00c66ef859c2981efb0795315069f55af30c0ae4f28b77690
+  content_hash: sha256:6b02383f86f87e81a722b3b6c6d6e06efa5c72f23bc87bb02599e3d499ca2c58
+mcp_servers:
+- context7
+- dotnet
+mcp_configs:
+  context7:
+    name: context7
+    transport: stdio
+    args:
+    - -y
+    - '@upstash/context7-mcp@latest'
+    registry: false
+    command: npx
+  dotnet:
+    name: dotnet
+    transport: stdio
+    args:
+    - Community.Mcp.DotNet@1.*
+    - --yes
+    registry: false
+    command: dnx

@@ -283,6 +283,7 @@ docs/coverage/*.md
 apm_modules/
 .agents/
 .claude/skills/
+.mcp.json
 
 # Language server caches
 *.lscache

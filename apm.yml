@@ -7,7 +7,22 @@ targets:
   - copilot
 dependencies:
   apm:
-    - dgalarza/claude-code-workflows/plugins/conventional-commits
-  mcp: []
+  - dgalarza/claude-code-workflows/plugins/conventional-commits
+  - upstash/context7/skills/context7-mcp
+  mcp:
+  - name: dotnet
+    registry: false
+    transport: stdio
+    command: dnx
+    args:
+    - Community.Mcp.DotNet@1.*
+    - --yes
+  - name: context7
+    registry: false
+    transport: stdio
+    command: npx
+    args:
+    - -y
+    - '@upstash/context7-mcp@latest'
 includes: auto
 scripts: {}
