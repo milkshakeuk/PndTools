@@ -10,7 +10,7 @@ Represents a named merge queue in `.mergify.yml`.
 
 | Field | Type | Valid values | Notes |
 | --- | --- | --- | --- |
-| `name` | string | `standard` | One queue for standard (non-Dependabot) PRs; Dependabot PRs use the direct merge action instead |
+| `name` | string | `standard` | One queue for standard (non-Dependabot) PRs; Dependabot PRs are handled by the auto-merge workflow |
 | `merge_method` | enum | `fast-forward` | Fixed; preserves GPG signatures; no update_method so Mergify never rewrites commits |
 | `max_checks_retries` | integer | ≥ 0 | Configurable per FR-011b circuit-breaker intent |
 
@@ -94,14 +94,14 @@ opened → checks running → checks pass + codeowner approves → enqueued (sta
 ### Dependabot minor/patch PR
 
 ```text
-opened → checks running → checks pass → Mergify merges directly via fast-forward
-       → checks fail                  → stays open
-       → branch behind main           → Mergify triggers update action → Dependabot rebases branch → CI re-runs (FR-010)
+opened → auto-merge workflow starts → checks running → checks pass → workflow auto-approves via app token → fast-forward push to main
+                                                    → checks fail  → workflow comments failure → stays open
+       → branch behind main         → workflow comments instructions → Dependabot rebases → CI re-runs (FR-010)
 ```
 
 ### Dependabot major PR
 
 ```text
-opened → checks running → checks pass + codeowner approves → Mergify merges directly via fast-forward
-                       → checks fail                       → blocked (stays open)
+opened → auto-merge workflow starts → checks running → checks pass → awaiting codeowner approval → codeowner approves → fast-forward push to main
+                                                    → checks fail  → workflow comments failure → stays open
 ```

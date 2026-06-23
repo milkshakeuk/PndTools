@@ -6,9 +6,9 @@
 
 ## Summary
 
-Configure the PndTools GitHub repository to enforce fast-forward-only merges that preserve commit signatures, gate standard and Dependabot major-version PRs behind codeowner approval and passing CI checks, and automatically merge Dependabot minor/patch PRs directly via fast-forward once CI passes.
+Configure the PndTools GitHub repository to enforce fast-forward-only merges that preserve commit signatures, gate standard and Dependabot major-version PRs behind codeowner approval and passing CI checks, and automatically merge Dependabot minor/patch PRs once CI passes.
 
-The solution combines configuration and a small GitHub Actions workflow: three GitHub Repository Rulesets enforce commit integrity, CI quality gates, and review gates; Mergify (free tier, full feature set on public repos) executes fast-forward merges — standard PRs via a single merge queue, Dependabot PRs via a direct merge action with no queue or temporary branches; a Dependabot NuGet Fix workflow amends non-conventional commit messages and re-signs commits using a dedicated GitHub App (`milkshake-writer-bot`) before CI re-runs.
+The solution combines configuration and two GitHub Actions workflows: three GitHub Repository Rulesets enforce commit integrity, CI quality gates, and review gates; Mergify (free tier, public repo) handles standard PRs via a fast-forward merge queue; a bespoke `dependabot-auto-merge.yml` workflow handles Dependabot PRs — polling CI, auto-approving minor/patch updates via the milkshake-writer-bot app token, gating major updates on any human approval (the Review Gates ruleset enforces codeowner review at the push layer), then fast-forward pushing directly to main; a Dependabot NuGet Fix workflow amends non-conventional commit messages and re-signs commits before CI re-runs.
 
 ## Technical Context
 
@@ -20,7 +20,9 @@ The solution combines configuration and a small GitHub Actions workflow: three G
 - GitHub Repository Rulesets (GA)
 - GitHub Dependabot version updates
 - GitHub Actions (existing CI workflows)
-- `milkshake-writer-bot` GitHub App — amends and re-signs Dependabot NuGet commits; credentials stored as Dependabot secrets (`MILKSHAKE_WRITER_BOT_CLIENT_ID`, `MILSHAKE_WRITER_BOT_APP_PRIVATE_KEY`)
+- `milkshake-writer-bot` GitHub App — amends and re-signs Dependabot NuGet commits; also used by the auto-merge workflow to approve and push; credentials stored as Dependabot secrets (`MILKSHAKE_WRITER_BOT_CLIENT_ID`, `MILSHAKE_WRITER_BOT_APP_PRIVATE_KEY`)
+- `dependabot/fetch-metadata` GitHub Action — classifies Dependabot PR update type (major/minor/patch)
+- Human approval for major Dependabot PRs — any non-bot reviewer; the Review Gates ruleset enforces codeowner review at the push layer
 
 **Storage**: N/A
 
@@ -39,6 +41,7 @@ The solution combines configuration and a small GitHub Actions workflow: three G
 - Mergify fast-forward is the only strategy satisfying both constraints simultaneously — it advances the base branch pointer without creating new commits, so existing GPG signatures are preserved intact; rebase rewrites commits and is incompatible with the required_signatures ruleset
 - Dependabot NuGet commits are unsigned and use non-conventional commit messages; a fix workflow using a GitHub App resolves both before CI re-runs
 - No `update_method` is set on the standard queue — standard PR authors must rebase their branches manually before Mergify can process them; Mergify never rewrites commits, so GPG signatures are preserved intact
+- The auto-merge workflow fast-forward pushes directly to main using the milkshake-writer-bot app token; no commit rewriting occurs and the push is signed by GitHub on behalf of the app
 
 **Scale/Scope**: Single repository; three package ecosystems (NuGet, npm, GitHub Actions)
 
@@ -73,11 +76,13 @@ specs/001-github-pr-merge/
 ### Source Files (repository root)
 
 ```text
-.mergify.yml                                    — Mergify queue and PR routing rules
+.mergify.yml                                    — Mergify queue and PR routing rules (standard PRs only)
 CODEOWNERS                                      — already exists at repo root; verify coverage is complete
 .github/
 ├── dependabot.yml                              — Dependabot ecosystem schedules and limits
 └── workflows/
+    ├── dependabot-auto-merge.yml               — polls CI, approves, and fast-forward merges Dependabot PRs
+    ├── dependabot-major-approval.yml           — re-triggers the auto-merge workflow when a major Dependabot PR is approved
     └── dependabot-nuget-fix.yml                — amends Dependabot NuGet commit messages and re-signs via GitHub App
 ```
 

@@ -57,13 +57,13 @@
 
 ## Phase 4: User Story 2 — Dependabot Minor/Patch Auto-Merge (Priority: P2)
 
-**Goal**: Dependabot minor and patch PRs merge automatically once checks pass, without human approval, using a direct fast-forward merge action — no queue, no speculative branches, no Mergify-authored commits
+**Goal**: Dependabot minor and patch PRs merge automatically once checks pass, without human approval, via a bespoke GitHub Actions workflow that fast-forward pushes directly to main — no queue, no speculative branches, no commit rewriting
 
-**Independent Test**: Observe a live Dependabot minor or patch PR — after checks pass it should merge automatically without any human action; each dependency update appears as its own commit on `main` with its original GPG signature intact
+**Independent Test**: Observe a live Dependabot minor or patch PR — after checks pass the workflow should auto-approve and merge without any human action; each dependency update appears as its own commit on `main` with its original GPG signature intact
 
 - [X] T011 [P] [US2] Create `.github/dependabot.yml` with three ecosystem entries (`nuget`, `npm`, `github-actions`), each targeting `/`, scheduled weekly, and `open-pull-requests-limit: 10`
-- [X] T012 [US2] Add the `auto-merge Dependabot PRs` pull_request_rule to `.mergify.yml` — conditions: `base = main`, `author = dependabot[bot]`, all required CI checks pass; action: `merge: method: fast-forward`; add the `rebase Dependabot PRs when outdated` rule to trigger Dependabot's own rebase when the branch falls behind main
-- [X] T013 [US2] Remove per-ecosystem queues (`nuget-deps`, `npm-deps`, `actions-deps`) and `merge_queue` section — direct merge action requires no queue routing; Dependabot manages its own branch currency and GPG signatures are preserved intact
+- [X] T012 [US2] Create `.github/workflows/dependabot-auto-merge.yml` — triggers on `pull_request` (opened/synchronize/reopened) for Dependabot PRs targeting main; polls until all checks pass; auto-approves minor/patch PRs via the milkshake-writer-bot app token; gates major PRs on repo admin approval; verifies the PR base is still at main HEAD then fast-forward pushes; posts result comments and a job summary
+- [X] T013 [US2] Remove all Dependabot rules from `.mergify.yml` — Mergify handles standard PRs only; simplify the `codeowner approval` merge_protection `if` to exclude Dependabot entirely
 
 **Checkpoint**: US2 is fully functional — eligible Dependabot minor/patch PRs merge automatically via fast-forward once CI passes; each commit on main retains its original signature
 
@@ -86,12 +86,12 @@
 
 **Goal**: Confirm that a failing check in one ecosystem does not block merges in another
 
-**Note**: Independence is provided by the direct merge action — each Dependabot PR merges as soon as its own CI passes with no shared queue state. No Mergify-authored commits are created, and rebase is never performed by Mergify, so GPG signatures are preserved.
+**Note**: Independence is provided by the auto-merge workflow — each Dependabot PR runs its own workflow instance. No Mergify involvement, no commit rewriting, GPG signatures preserved intact.
 
 **Independent Test**: With a Dependabot PR failing CI in one ecosystem, confirm PRs in other ecosystems still queue and merge independently
 
-- [X] T015 [US4] Independence verified in practice — direct merge action confirmed; Dependabot PRs merge individually with no shared queue state
-- ~~T016 batch fill window~~ — not applicable; Dependabot PRs use a direct merge action, not a queue
+- [X] T015 [US4] Independence verified in practice — auto-merge workflow confirmed; each Dependabot PR runs its own workflow instance with no shared queue state
+- ~~T016 batch fill window~~ — not applicable; Dependabot PRs are merged individually by the auto-merge workflow
 - ~~T016a FR-009 batch summary~~ — not implemented; batch membership is visible in Mergify dashboard and queue dequeue notifications
 - ~~T016b mixed semver tiebreaker~~ — not observed in practice; Dependabot applies a single semver label per PR
 

@@ -1,0 +1,98 @@
+name: Dependabot Major PR Approval
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+concurrency:
+  group: dependabot-major-approval-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  trigger-merge-on-approval:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      pull-requests: read
+    if: |
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.review.state == 'APPROVED'
+    steps:
+      - name: Fetch Dependabot Metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Re-trigger auto-merge on approval
+        id: re-trigger
+        if: steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const reviewer = context.payload.review.user.login;
+
+            core.info(`Approval received from ${reviewer}, proceeding with re-trigger.`);
+
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              head_sha: pr.head.sha,
+              event: 'pull_request',
+              per_page: 100,
+            });
+
+            runs.workflow_runs = runs.workflow_runs.filter(r => r.name === 'Dependabot Auto Merge');
+
+            if (runs.workflow_runs.length === 0) {
+              core.setFailed(`No dependabot-auto-merge workflow run found for commit ${pr.head.sha}`);
+              return;
+            }
+
+            const run = runs.workflow_runs[0];
+            core.info(`Found workflow run ${run.id} with status '${run.status}'`);
+
+            if (run.status !== 'completed') {
+              core.info('Workflow run is still in progress — it will pick up the approval naturally, no re-run needed.');
+              return;
+            }
+
+            await github.rest.actions.reRunWorkflow({ owner, repo, run_id: run.id });
+            core.info('Re-run triggered successfully.');
+
+      - name: Write job summary
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          UPDATE_TYPE: ${{ steps.dependabot-metadata.outputs.update-type }}
+          RETRIGGER_CONCLUSION: ${{ steps.re-trigger.conclusion }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const updateType = process.env.UPDATE_TYPE || '—';
+            const retriggerConclusion = process.env.RETRIGGER_CONCLUSION;
+
+            const retriggerResult = retriggerConclusion === 'skipped'
+              ? '⏭️ Skipped (not major)'
+              : retriggerConclusion === 'success'
+              ? '✅ Triggered'
+              : retriggerConclusion === 'failure'
+              ? '❌ Failed'
+              : retriggerConclusion || '—';
+
+            const summary = [
+              '## Dependabot Major PR Approval',
+              '',
+              '| Step | Result | Detail |',
+              '| --- | --- | --- |',
+              `| Fetch metadata | ✅ Success | \`${updateType}\` |`,
+              `| Re-trigger | ${retriggerResult} | |`,
+            ].join('\n');
+
+            await core.summary.addRaw(summary).write();

@@ -95,26 +95,26 @@ Dependabot PRs merge independently of one another via a direct fast-forward merg
 - **FR-004**: Dependabot PRs for minor or patch version updates MUST be merged automatically once all required checks pass, without requiring human approval.
 - **FR-005**: Dependabot PRs for major version updates MUST follow the same approval gate as standard PRs (all checks pass and codeowner approval required).
 - **FR-006**: The system MUST classify Dependabot PR update types (major, minor, patch) using GitHub's Dependabot metadata labels (`version-update:semver-major`, `version-update:semver-minor`, `version-update:semver-patch`). A PR where none of these labels are present MUST be treated as a major update and require codeowner approval. Where a PR carries multiple semver labels simultaneously (e.g. a grouped update spanning both minor and major dependencies), the highest severity label takes precedence — `semver-major` overrides `semver-minor`, which overrides `semver-patch`.
-- **FR-007**: Dependabot minor/patch PRs MUST be merged directly via fast-forward once all required CI checks pass. No merge queue is used for Dependabot PRs; each PR merges independently so that a failing check on one PR cannot block merges of others.
+- **FR-007**: Dependabot minor/patch PRs MUST be merged automatically via a fast-forward push to main once all required CI checks pass and the PR branch is up to date. A bespoke GitHub Actions workflow (`dependabot-auto-merge.yml`) handles polling, approval, and the merge; no merge queue is used.
 - **FR-008**: PRs with failing checks MUST remain open and unaffected while other eligible PRs in the same or different ecosystems continue to merge.
-- **FR-011a**: The system MUST retry failed merge attempts up to a configurable number of times before dequeuing the PR.
-- **FR-011b**: A circuit breaker MUST be applied after a configurable number of consecutive failures, preventing further attempts.
-- **FR-011c**: If a merge operation cannot complete after all retries are exhausted, the system MUST post a comment on the affected PR explaining the failure.
-- **FR-010**: Every PR MUST be up to date with main before it is merged. Standard PR authors are responsible for keeping their branches current; Mergify will refuse to fast-forward a branch that has fallen behind. For Dependabot PRs, Mergify triggers a branch update via the `update` action whenever the branch falls behind main, relying on Dependabot's own rebase so that commit signatures are preserved.
+- **FR-011a**: The system MUST retry failed merge attempts up to a configurable number of times before dequeuing the PR. Applies to standard PRs via the Mergify queue (`max_checks_retries`).
+- **FR-011b**: A circuit breaker MUST be applied after a configurable number of consecutive failures, preventing further attempts. Applies to standard PRs via Mergify.
+- **FR-011c**: If a merge operation cannot complete after all retries are exhausted, the system MUST post a comment on the affected PR explaining the failure. For standard PRs this is the Mergify failure notification; for Dependabot PRs the auto-merge workflow posts a comment on check failure or branch divergence.
+- **FR-010**: Every PR MUST be up to date with main before it is merged. Standard PR authors are responsible for keeping their branches current; Mergify will refuse to fast-forward a branch that has fallen behind. For Dependabot PRs, the auto-merge workflow detects when the branch is behind and posts instructions; Dependabot rebases its own branch so commit signatures are never rewritten.
 
 ### Key Entities
 
 - **Pull Request**: A proposed change targeting the main branch; classified as either standard or Dependabot-authored, and in the Dependabot case as major, minor, or patch update.
 - **Required Status Check**: A CI job or external check that must report success before a PR is eligible for merge.
 - **Code Owner**: A team member or group designated in CODEOWNERS whose approval is required for human-authored and Dependabot major-version PRs.
-- **Ecosystem Queue**: A named Mergify merge queue scoped to a single package ecosystem (NuGet, npm, GitHub Actions). PRs enter the matching queue based on their ecosystem label and are merged individually via fast-forward.
+- **Auto-Merge Workflow**: A GitHub Actions workflow (`dependabot-auto-merge.yml`) that handles Dependabot PR merging. It polls until CI passes, auto-approves minor/patch PRs via the milkshake-writer-bot app, gates major PRs on codeowner approval, then fast-forward pushes directly to main.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
 - **SC-001**: Zero standard PRs can be merged without all required checks passing and at least one codeowner approval.
-- **SC-002**: Dependabot minor and patch PRs merge without any human action once all checks complete and the queue processes them.
+- **SC-002**: Dependabot minor and patch PRs merge without any human action once all checks complete and the auto-merge workflow executes the fast-forward push.
 - **SC-003**: Dependabot major PRs follow exactly the same gate as standard PRs — no merge without codeowner approval.
 - **SC-004**: A failing check on a Dependabot PR in one ecosystem does not block merges in any other ecosystem.
 - **SC-005**: Every dependency update that lands on main is traceable as an individual commit in the repository history.
@@ -127,7 +127,7 @@ Dependabot PRs merge independently of one another via a direct fast-forward merg
 - Q: When a PR branch has diverged from main and a true fast-forward is impossible without rewriting commits, how should the system behave? → A: Require the PR branch to be up to date with main before merge is permitted; block the merge if the branch has diverged.
 - Q: What is the source used to classify Dependabot PRs as major, minor, or patch? → A: GitHub's Dependabot metadata labels (e.g. `version-update:semver-major`, `version-update:semver-minor`, `version-update:semver-patch`).
 - Q: How should the system handle transient merge failures? → A: Retry up to a configurable number of times; post a PR comment if all retries are exhausted.
-- Q: Should Dependabot PRs be batched or queued? → A: No. Queuing creates speculative branches with Mergify-authored merge commits that fail commitlint; rebase is incompatible with the `required_signatures` ruleset. Dependabot PRs merge directly via a fast-forward merge action once CI passes; Dependabot manages its own branch currency so GPG signatures are never invalidated.
+- Q: Should Dependabot PRs be batched or queued? → A: No. A Mergify queue was attempted but abandoned: queuing creates speculative branches with Mergify-authored merge commits that fail commitlint, and rebase is incompatible with the `required_signatures` ruleset. A bespoke GitHub Actions workflow now handles Dependabot PRs instead — it polls CI, approves, and fast-forward pushes directly to main without any commit rewriting.
 
 ## Assumptions
 

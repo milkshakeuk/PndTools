@@ -1,0 +1,399 @@
+name: Dependabot Auto Merge
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+# Cancel in-progress runs for the same PR so a nuget-fix push supersedes the
+# stale run rather than racing it to the merge step.
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+    if: |
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.MILKSHAKE_WRITER_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.MILSHAKE_WRITER_BOT_APP_PRIVATE_KEY }}
+
+      # App token required: authenticates git push in the merge step
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Fetch Dependabot Metadata
+        id: dependabot-metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Poll and validate checks
+        id: poll-checks
+        if: |
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor' ||
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+
+            const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+            const MAX_WAIT_MS = 10 * 60 * 1000;
+            const RETRY_MS = 10000;
+            const startTime = Date.now();
+
+            core.info("Polling checks...");
+
+            while (true) {
+              const { data: { check_runs } } = await github.rest.checks.listForRef({
+                owner, repo, ref: pr.head.sha, filter: 'latest'
+              });
+
+              const otherChecks = check_runs.filter(r => r.name !== context.job);
+              const pendingChecks = otherChecks.filter(r => r.status !== 'completed');
+
+              if (pendingChecks.length === 0) { core.info("All checks complete."); break; }
+
+              if (Date.now() - startTime > MAX_WAIT_MS) {
+                core.setFailed(`Timeout waiting for: ${pendingChecks.map(c => c.name).join(', ')}`);
+                return;
+              }
+
+              core.info(`Waiting for ${pendingChecks.length} check(s):`);
+              pendingChecks.forEach(c => core.info(` - ${c.name}: ${c.status}`));
+              await sleep(RETRY_MS);
+            }
+
+            const { data: { check_runs } } = await github.rest.checks.listForRef({
+              owner, repo, ref: pr.head.sha, filter: 'latest'
+            });
+
+            const failedChecks = check_runs
+              .filter(r => r.name !== context.job)
+              .filter(r => r.status !== 'completed' || !['success', 'skipped', 'neutral'].includes(r.conclusion));
+
+            if (failedChecks.length > 0) {
+              core.setFailed(`${failedChecks.length} check(s) failed or incomplete:`);
+              failedChecks.forEach(c => core.info(` - ${c.name}: ${c.status} / ${c.conclusion}`));
+            }
+
+      # Guard against a nuget-fix push amending the commit while checks were running.
+      # If the PR head has moved on, this run is stale — the new synchronize event
+      # will have started a fresh run (which cancel-in-progress would not have caught
+      # if both entered the merge phase simultaneously).
+      - name: Verify head SHA unchanged
+        id: verify-head
+        if: steps.poll-checks.conclusion == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const { data: current } = await github.rest.pulls.get({ owner, repo, pull_number: pr.number });
+            if (current.head.sha !== pr.head.sha) {
+              core.setFailed(
+                `PR head changed from ${pr.head.sha.slice(0,7)} to ${current.head.sha.slice(0,7)} — ` +
+                `a new run will handle the updated commit.`
+              );
+            }
+
+      # App token required for: createReview (GITHUB_TOKEN cannot self-approve)
+      - name: Handle approval gate
+        id: approval
+        if: steps.verify-head.conclusion == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_USERNAME: '${{ steps.app-token.outputs.app-slug }}[bot]'
+          UPDATE_TYPE: ${{ steps.dependabot-metadata.outputs.update-type }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const isMajor = process.env.UPDATE_TYPE === 'version-update:semver-major';
+            const botUserName = process.env.APP_USERNAME;
+            const shortSha = pr.head.sha.slice(0, 7);
+
+            core.setOutput('state', 'pending');
+
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner, repo, pull_number: pr.number
+            });
+
+            if (isMajor) {
+              // Any human approval unblocks the merge — the Review Gates ruleset
+              // enforces codeowner review at the push layer regardless.
+              const humanApproval = reviews.some(r =>
+                r.state === 'APPROVED' && r.user.login !== botUserName
+              );
+
+              if (!humanApproval) {
+                core.info(`Major: awaiting human approval.`);
+                return;
+              }
+
+              core.info(`Human approval confirmed. Proceeding.`);
+            } else {
+              const alreadyApproved = reviews.some(r =>
+                r.user.login === botUserName &&
+                r.commit_id === pr.head.sha &&
+                r.state === 'APPROVED'
+              );
+
+              if (!alreadyApproved) {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: pr.number, labels: ['auto-approved']
+                });
+
+                // App token required: GITHUB_TOKEN cannot approve its own PR
+                const appOctokit = getOctokit(process.env.APP_TOKEN);
+                await appOctokit.rest.pulls.createReview({
+                  owner, repo, pull_number: pr.number,
+                  event: 'APPROVE',
+                  body: `## ✅ Dependabot PR Auto Approved\n\nApproved automatically because update is **non-major** and all checks have passed.\n\nResults from commit ${shortSha}`
+                });
+              }
+            }
+
+            core.setOutput('state', 'approved');
+
+      - name: Verify PR base
+        id: verify-base
+        if: steps.approval.outputs.state == 'approved'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const targetBranch = pr.base.ref;
+            const shortSha = pr.head.sha.slice(0, 7);
+            const jobSummaryUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            const { data: refData } = await github.rest.git.getRef({
+              owner, repo, ref: `heads/${targetBranch}`
+            });
+
+            if (pr.base.sha !== refData.object.sha) {
+              core.setFailed(`PR is behind ${targetBranch} - cannot fast-forward merge.`);
+
+              const marker = '<!-- dependabot-merge-comment -->';
+              const existingComments = await github.paginate(
+                github.rest.issues.listComments,
+                { owner, repo, issue_number: pr.number, per_page: 100 }
+              );
+              const previous = existingComments.find(c => c.body?.includes(marker));
+
+              const sections = [
+                '## ⚠️ Dependabot Auto Merge Blocked - PR Is Behind',
+                '',
+                `This PR is behind \`${targetBranch}\` and cannot be merged automatically. Dependabot may rebase it automatically - if that doesn't happen, or you'd rather not wait, post one of the following as a comment:`,
+                '',
+                '- `@dependabot rebase` - rebases this PR onto the latest `' + targetBranch + '`',
+                '- `@dependabot recreate` - re-runs the update from scratch on top of the latest `' + targetBranch + '`',
+                '',
+                '> These commands must be posted by a user with push access.',
+                '',
+                `Results from commit ${shortSha}, view the full [workflow run↗️](${jobSummaryUrl}) for details.`,
+              ];
+              if (previous) sections.push('', ':recycle: This comment has been updated with latest results.');
+
+              const body = `${marker}\n${sections.join('\n')}\n${marker}`;
+
+              if (previous) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body });
+              }
+            }
+
+      - name: Fast-forward merge
+        id: merge
+        if: steps.verify-base.conclusion == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          APP_USERNAME: '${{ steps.app-token.outputs.app-slug }}[bot]'
+          APP_EMAIL: '${{ steps.app-token.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const targetBranch = pr.base.ref;
+
+            core.setOutput('merge-status', 'failed');
+
+            let gitOutput = '';
+            let gitError = '';
+            const execOptions = {
+              ignoreReturnCode: false,
+              listeners: {
+                stdout: d => { gitOutput += d.toString(); },
+                stderr: d => { gitError += d.toString(); }
+              }
+            };
+
+            try {
+              await exec.exec('git', ['config', 'user.name', process.env.APP_USERNAME], execOptions);
+              await exec.exec('git', ['config', 'user.email', process.env.APP_EMAIL], execOptions);
+              await exec.exec('git', ['fetch', 'origin', targetBranch], execOptions);
+              await exec.exec('git', ['checkout', targetBranch], execOptions);
+              await exec.exec('git', ['fetch', 'origin', pr.head.sha], execOptions);
+              await exec.exec('git', ['merge', '--ff-only', pr.head.sha], execOptions);
+              await exec.exec('git', ['push', 'origin', targetBranch], execOptions);
+
+              core.info("Fast-forward merge successful.");
+              core.setOutput('merge-status', 'success');
+            } catch (error) {
+              const combined = (gitError + gitOutput).toLowerCase();
+              const isStale = combined.includes('not possible to fast-forward') ||
+                              combined.includes('updates were rejected') ||
+                              combined.includes('failed to push some refs');
+
+              if (isStale) {
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: pr.number, body: "@dependabot recreate"
+                });
+              }
+
+              core.setFailed(`Git merge failed: ${error.message}. Stdout: ${gitOutput || '[empty]'}. Stderr: ${gitError || '[empty]'}.`);
+            }
+
+      - name: Comment results
+        if: |
+          always() &&
+          steps.poll-checks.conclusion != 'skipped' &&
+          steps.verify-base.conclusion != 'failure' &&
+          (steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor' ||
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major')
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          POLL_CHECKS_CONCLUSION: ${{ steps.poll-checks.conclusion }}
+          APPROVAL_STATE: ${{ steps.approval.outputs.state }}
+          MERGE_RESULT: ${{ steps.merge.outputs.merge-status }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const jobSummaryUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const shortSha = pr.head.sha.slice(0, 7);
+
+            const checksFailed = process.env.POLL_CHECKS_CONCLUSION === 'failure';
+            const isAwaitingApproval = !checksFailed && process.env.APPROVAL_STATE !== 'approved';
+            const isSuccess = process.env.MERGE_RESULT === 'success';
+            const isFailure = process.env.MERGE_RESULT === 'failed';
+
+            const marker = '<!-- dependabot-merge-comment -->';
+            const heading = checksFailed
+              ? '## ❌ Dependabot Auto Merge Blocked - Checks Failed'
+              : isAwaitingApproval
+              ? '## ⏳ Dependabot Auto Merge Awaiting Approval'
+              : isSuccess
+              ? '## 🤖 Dependabot Auto Merge Succeeded'
+              : isFailure
+              ? '## ⚠️ Dependabot Auto Merge Failed'
+              : '## ❓ Dependabot Auto Merge Unknown State';
+            const narration = checksFailed
+              ? `One or more checks failed on commit ${shortSha}. View the full [workflow run↗️](${jobSummaryUrl}) for details.`
+              : isAwaitingApproval
+              ? `This is a **major** version update. All checks have passed, but a human must approve before it can be merged automatically.`
+              : `Results from commit ${shortSha}, view the full [workflow run↗️](${jobSummaryUrl}) for details.`;
+
+            const bodySections = [heading, narration];
+
+            const existingComments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number: pr.number, per_page: 100 }
+            );
+            const previous = existingComments.find(c => c.body?.includes(marker));
+            if (previous) bodySections.push(':recycle: This comment has been updated with latest results.');
+
+            const body = `${marker}\n${bodySections.join('\n\n')}\n${marker}`;
+
+            if (previous) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: pr.number, body });
+            }
+
+      - name: Write job summary
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          UPDATE_TYPE: ${{ steps.dependabot-metadata.outputs.update-type }}
+          POLL_CHECKS_CONCLUSION: ${{ steps.poll-checks.conclusion }}
+          VERIFY_HEAD_CONCLUSION: ${{ steps.verify-head.conclusion }}
+          APPROVAL_STATE: ${{ steps.approval.outputs.state }}
+          VERIFY_BASE_CONCLUSION: ${{ steps.verify-base.conclusion }}
+          MERGE_RESULT: ${{ steps.merge.outputs.merge-status }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            const fmtConclusion = (v) => {
+              if (!v || v === 'skipped') return '⏭️ Skipped';
+              if (v === 'success') return '✅ ' + v;
+              if (v === 'failure') return '❌ ' + v;
+              return v;
+            };
+
+            const approvalState = process.env.APPROVAL_STATE;
+            const approvalDisplay = approvalState === 'approved'
+              ? '✅ Approved'
+              : approvalState === 'pending' || approvalState === ''
+              ? '⏳ Pending'
+              : '⏭️ Skipped';
+
+            const mergeResult = process.env.MERGE_RESULT;
+            const mergeDisplay = mergeResult === 'success'
+              ? '✅ Success'
+              : mergeResult === 'failed'
+              ? '❌ Failed'
+              : '⏭️ Skipped';
+
+            const rows = [
+              `| Fetch metadata | ✅ Success | \`${process.env.UPDATE_TYPE || '—'}\` |`,
+              `| Poll checks | ${fmtConclusion(process.env.POLL_CHECKS_CONCLUSION)} | — |`,
+              `| Verify head SHA | ${fmtConclusion(process.env.VERIFY_HEAD_CONCLUSION)} | — |`,
+              `| Approval gate | ${approvalDisplay} | — |`,
+              `| Verify base | ${fmtConclusion(process.env.VERIFY_BASE_CONCLUSION)} | — |`,
+              `| Fast-forward merge | ${mergeDisplay} | — |`,
+            ].join('\n');
+
+            const summary = [
+              '## Dependabot Auto Merge Summary',
+              '',
+              `Workflow run: [${context.runId}](${runUrl})`,
+              '',
+              '| Step | Result | Detail |',
+              '| --- | --- | --- |',
+              rows,
+            ].join('\n');
+
+            await core.summary.addRaw(summary).write();

@@ -1,14 +1,12 @@
 merge_protections:
 
-  # Gates Dependabot major-version PRs on codeowner approval before Mergify
-  # can merge them. Minor/patch PRs are excluded — they merge automatically
-  # once CI passes.
+  # Gates standard PRs on codeowner approval. The Mergify Merge Protections
+  # check run produced by this block is required by the Mergify Merge Protection
+  # GitHub ruleset.
   - name: codeowner approval
     if:
       - base = main
-      - or:
-          - -author = dependabot[bot]
-          - dependabot-update-type = version-update:semver-major
+      - -author = dependabot[bot]
     success_conditions:
       - "#approved-reviews-by >= 1"
       - "#changes-requested-reviews-by = 0"
@@ -19,7 +17,7 @@ merge_protections_settings:
 
 queue_rules:
 
-  # Standard (non-Dependabot) PRs — queued to serialise merges and enforce CI + approval.
+  # Standard (non-Dependabot) PRs — queued to serialise merges.
   - name: standard
     merge_method: fast-forward
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
@@ -44,32 +42,6 @@ pull_request_rules:
     actions:
       queue:
         name: standard
-
-  # Dependabot PRs merge directly once CI passes — no queue, no speculative branch.
-  # Major PRs are blocked by the codeowner approval merge_protection until approved.
-  # Dependabot keeps its own branches up to date; signed commits are preserved.
-  - name: auto-merge Dependabot PRs
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      merge:
-        method: fast-forward
-
-  # Keep Dependabot PR branches up to date with main.
-  - name: rebase Dependabot PRs when outdated
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - -conflict
-      - -draft
-    actions:
-      update:
 
   # Failure notification — post a comment when a standard PR is dequeued for any terminal reason.
   - name: notify on merge failure

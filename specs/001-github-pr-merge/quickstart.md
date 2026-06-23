@@ -17,9 +17,11 @@ Install the Mergify GitHub App on the repository via the GitHub Marketplace or f
 
 Copy the contract at `specs/001-github-pr-merge/contracts/dependabot.yml` to `.github/dependabot.yml`. Adjust the `open-pull-requests-limit` per ecosystem as needed — PRs are merged individually so there is no batch size to align with.
 
-## Step 3 — Deploy Mergify configuration
+## Step 3 — Deploy Mergify configuration and auto-merge workflow
 
-Copy the contract at `specs/001-github-pr-merge/contracts/mergify.yml` to `.mergify.yml` at the repository root. Update the `check-success` values in every queue rule and pull request rule to match the actual GitHub Actions workflow job names used in CI.
+Copy the contract at `specs/001-github-pr-merge/contracts/mergify.yml` to `.mergify.yml` at the repository root. Update the `check-success` values in the pull request rule to match the actual GitHub Actions workflow job names used in CI.
+
+Copy `.github/workflows/dependabot-auto-merge.yml` from the repository. Ensure the `MILKSHAKE_WRITER_BOT_CLIENT_ID` and `MILSHAKE_WRITER_BOT_APP_PRIVATE_KEY` secrets are configured on the repository. Major Dependabot PRs require any human approval before the workflow will merge them; the Review Gates ruleset enforces codeowner review at the push layer — no additional configuration is needed.
 
 ## Step 4 — Configure GitHub Repository Rulesets
 
@@ -37,9 +39,9 @@ Open a test PR and confirm:
 
 - The PR cannot be merged without checks passing (Ruleset 2).
 - The PR cannot be merged without codeowner approval (Ruleset 3).
-- A Dependabot minor/patch PR merges automatically via fast-forward once checks pass, with no human action.
-- A Dependabot major PR does not auto-merge and requires codeowner approval.
-- Commits on `main` retain their GPG signatures after merging (Ruleset 1 + Mergify fast-forward).
+- A Dependabot minor/patch PR is auto-approved and fast-forward merged by the workflow once checks pass, with no human action.
+- A Dependabot major PR posts an "awaiting approval" comment and only merges once any human approves.
+- Commits on `main` retain their GPG signatures after merging (Ruleset 1 + fast-forward push).
 - A standard PR branch that has fallen behind main is refused by Mergify until the author rebases manually.
 
 [mergify]: https://mergify.com

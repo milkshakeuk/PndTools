@@ -4,62 +4,42 @@
 # It is a reference contract, not the deployed file.
 # The deployed file lives at the repository root: /.mergify.yml
 #
-# Dependabot NuGet commits are amended by dependabot-nuget-fix.yml before CI runs. This workflow
-# replaces the commit via the GitHub REST API using a GitHub App token (milkshake-writer-bot),
-# which signs the new commit automatically. The App token is required for the ref update so that
-# the pull_request: synchronize event fires and re-triggers CI — github.token force pushes do not
-# fire this event.
+# Mergify handles only standard (non-Dependabot) PRs. Dependabot PRs are
+# handled entirely by the dependabot-auto-merge.yml GitHub Actions workflow,
+# which polls CI, auto-approves minor/patch updates, gates major updates on
+# admin approval, and fast-forward pushes directly to main.
 #
-# Automatic merging is handled by pull_request_rules. Mergify evaluates each rule's conditions
-# and automatically merges or queues the PR when they all pass — no manual @Mergifyio command
-# is needed.
+# Mergify is added as a bypass actor (bypass_mode: always) on the Review Gates
+# GitHub ruleset. This allows Mergify to fast-forward push to main without the
+# push being blocked by the required_approving_review_count ruleset rule.
+# All review gate requirements are validated by Mergify's queue conditions before
+# the push is attempted.
 #
-# Mergify is added as a bypass actor (bypass_mode: always) on the Review Gates GitHub ruleset.
-# This replaces the previous merge_bot_account + branch_protection_injection_mode: none approach.
-# The standard queue uses the default branch_protection_injection_mode (queue), which injects
-# ruleset conditions into queue evaluation. For Dependabot PRs the direct merge action bypasses
-# the Review Gates ruleset via the Mergify bypass actor.
+# No update_method is set on the standard queue. Mergify will refuse to
+# fast-forward a PR branch that has fallen behind main. Standard PR authors are
+# responsible for keeping their branches current by rebasing manually before the
+# queue processes them. This preserves GPG signatures — no rebase by Mergify means
+# no commit rewriting and no signature invalidation (FR-003b).
 #
-# dependabot-update-type is used only in the codeowner approval merge_protection (where it is
-# documented). It is NOT used in queue_conditions, merge conditions, or pull_request_rules
-# conditions — routing is done purely by author.
+# max_checks_retries controls how many times Mergify retries a failing CI check
+# before dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
 #
-# The codeowner approval merge_protection blocks the direct merge of major Dependabot PRs until
-# a codeowner approves. Minor/patch PRs are not subject to this protection and merge automatically
-# once CI passes.
-#
-# Dependabot minor/patch PRs are merged directly via the merge action rather than through a queue.
-# This preserves GPG-signed commits intact — no temporary queue branch is created, no Mergify-
-# authored commits appear in history, and Dependabot handles its own branch currency by rebasing
-# against main when the branch falls behind.
-#
-# No update_method is set on the standard queue. Mergify will refuse to fast-forward a PR branch
-# that has fallen behind main. Standard PR authors are responsible for keeping their branches
-# current by rebasing manually before the queue processes them. This preserves GPG signatures —
-# no rebase by Mergify means no commit rewriting and no signature invalidation (FR-003b).
-#
-# max_checks_retries controls how many times Mergify retries a failing CI check before
-# dequeuing the PR (FR-011b circuit breaker). Recommended starting value: 3.
+# The codeowner approval merge_protection produces the Mergify Merge Protections
+# check run required by the Mergify Merge Protection GitHub ruleset. Without this
+# block the check run is never created and the ruleset blocks all merges.
 #
 # Review Gates ruleset bypass actors:
-#   - Mergify GitHub App (ID 10562)  — bypass_mode: always (needed for direct fast-forward push to main)
+#   - Mergify GitHub App (ID 10562)  — bypass_mode: always (needed for fast-forward push to main)
 #   - Dependabot (ID 29110)          — bypass_mode: pull_request (prevents approval injection on Dependabot PRs)
 
 merge_protections:
 
-  # Gates Dependabot major-version PRs on codeowner approval before Mergify
-  # can merge them. Minor/patch PRs are excluded — they merge automatically
-  # once CI passes.
-  #
-  # CI checks and approval for standard PRs are enforced by GitHub rulesets
-  # and injected automatically into pull_request_rules conditions; no
-  # separate CI quality gates merge_protection is needed.
+  # Gates standard PRs on codeowner approval. Produces the Mergify Merge Protections
+  # check run required by the Mergify Merge Protection GitHub ruleset.
   - name: codeowner approval
     if:
       - base = main
-      - or:
-          - -author = dependabot[bot]
-          - dependabot-update-type = version-update:semver-major
+      - -author = dependabot[bot]
     success_conditions:
       - "#approved-reviews-by >= 1"
       - "#changes-requested-reviews-by = 0"
@@ -70,7 +50,7 @@ merge_protections_settings:
 
 queue_rules:
 
-  # Standard (non-Dependabot) PRs — queued to serialise merges and enforce CI + approval.
+  # Standard (non-Dependabot) PRs — queued to serialise fast-forward merges.
   - name: standard
     merge_method: fast-forward
     max_checks_retries: 3            # configurable; FR-011b circuit breaker
@@ -95,32 +75,6 @@ pull_request_rules:
     actions:
       queue:
         name: standard
-
-  # Dependabot PRs merge directly once CI passes — no queue, no speculative branch.
-  # Major PRs are blocked by the codeowner approval merge_protection until approved.
-  # Dependabot keeps its own branches up to date; signed commits are preserved.
-  - name: auto-merge Dependabot PRs
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - check-success = commitlint
-      - check-success = lint
-      - check-success = dependency-review
-      - check-success = build
-      - check-success = Analyze (csharp)
-    actions:
-      merge:
-        method: fast-forward
-
-  # Keep Dependabot PR branches up to date with main.
-  - name: rebase Dependabot PRs when outdated
-    conditions:
-      - base = main
-      - author = dependabot[bot]
-      - -conflict
-      - -draft
-    actions:
-      update:
 
   # Failure notification — post a comment when a standard PR is dequeued for any terminal reason.
   - name: notify on merge failure

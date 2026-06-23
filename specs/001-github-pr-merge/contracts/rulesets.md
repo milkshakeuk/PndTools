@@ -67,7 +67,7 @@ Four rulesets are configured on the `main` branch. Each has a single concern and
 **Bypass actors**:
 
 - Mergify GitHub App (ID: 10562) — `bypass_mode: always`; allows the fast-forward push to `main` after all conditions have been validated by Mergify
-- Dependabot (ID: 29110) — `bypass_mode: pull_request`; prevents approval conditions from being injected into Mergify queue evaluation for Dependabot PRs; the `codeowner approval` merge_protection still gates major updates
+- Dependabot (ID: 29110) — `bypass_mode: pull_request`; prevents approval conditions from being injected into Mergify queue evaluation; Dependabot PR merging is handled entirely by the auto-merge workflow, not Mergify
 
 | Rule | Configuration |
 | --- | --- |
