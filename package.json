@@ -13,6 +13,6 @@
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
     "@j178/prek": "^0.4.4",
-    "markdownlint-cli2": "^0.22.1"
+    "markdownlint-cli2": "^0.23.0"
   }
 }
